@@ -11,7 +11,12 @@ namespace Visual_Magnitude {
 
         private static Dictionary<Orientation, LosCells> losCellsDict;
         private const double radInDeg = 57.2957795;
+        private const int earthDiameter = 12740000;
+        private const float lightRefraction = 0.13F;
 
+        /// <summary>
+        /// Definitions of positions of neighbor cells in each of 16 sectors.
+        /// </summary>
         static SpatialUtils() {
             losCellsDict = new Dictionary<Orientation, LosCells>();
             losCellsDict.Add(Orientation.W, new LosCells(0, 1, 0, 1));
@@ -34,9 +39,21 @@ namespace Visual_Magnitude {
 
 
         [Cudafy]
-        public static void IsCellVisible(int threadId, ViewpointProps viewpoint, double[][] losMap, int cellY, int cellX, Orientation cellOrientation, bool[] visibility) {
+        public static void IsCellVisible(int threadId, double[][] elevationMap, double[][] losMap, ViewpointProps viewpoint, int cellY, int cellX, Orientation cellOrientation, bool[] visible) {
+            GetNeighborCells(cellY, cellX, cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX);
 
+            double adjacentWeight = InterpolateWeight(viewpoint, cellY, cellX, cellOrientation);
 
+            double viewingLos = GetViewingSlope(elevationMap, viewpoint, cellY, cellX);
+            double cellLos = losMap[adjacentY][adjacentX] * adjacentWeight + losMap[offsetY][offsetX] * (1 - adjacentWeight);
+
+            if (viewingLos < cellLos) {
+                losMap[cellY][cellX] = cellLos;
+                visible[threadId] = false;
+            } else {
+                losMap[cellY][cellX] = viewingLos;
+                visible[threadId] = true;
+            }
         }
 
         /// <summary>
@@ -49,11 +66,7 @@ namespace Visual_Magnitude {
         /// <returns>Weight of the adjacent cell</returns>
         [Cudafy]
         private static double InterpolateWeight(ViewpointProps viewpoint, int cellY, int cellX, Orientation cellOrientation) {
-            losCellsDict.TryGetValue(cellOrientation, out LosCells losCells);
-            int adjacentX = cellX + losCells.XCell1;
-            int adjacentY = cellX + losCells.XCell1;
-            int offsetX = cellX + losCells.XCell1;
-            int offsetY = cellX + losCells.XCell1;
+            GetNeighborCells(cellY, cellX, cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX);
 
             float cellAspect = (float)GetViewingAspect(viewpoint, viewpoint.Y, viewpoint.X);
             float adjacentAspect = (float)GetViewingAspect(viewpoint, adjacentY, adjacentX);
@@ -77,6 +90,42 @@ namespace Visual_Magnitude {
         [Cudafy]
         private static double GetViewingAspect(ViewpointProps viewpoint, int cellY, int cellX) {
             return GMath.Atan2((cellY - viewpoint.Y) * viewpoint.CellResoulution, (cellX - viewpoint.X) * viewpoint.CellResoulution);
+        }
+
+        [Cudafy]
+        private static double GetViewingSlope(double[][] elevationMap, ViewpointProps viewpoint, int cellY, int cellX) {
+            float[] yxzDistances = GetYXZDistances(viewpoint, cellY, cellX, elevationMap[cellY][cellX]);
+            float directDistance = GMath.Sqrt(GMath.Pow(yxzDistances[1], 2) + GMath.Pow(yxzDistances[0], 2));
+
+            return GMath.Atan2(yxzDistances[2], directDistance);
+        }
+
+        /// <summary>
+        /// Calculate difference between origin and cell for y, x coordinates and elevation adjusted for Earth's curvature.
+        /// </summary>
+        /// <param name="viewpoint">Viewpoint properties</param>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <param name="cellElevation">Elevation of the cell</param>
+        /// <returns></returns>
+        [Cudafy]
+        private static float[] GetYXZDistances(ViewpointProps viewpoint, int cellY, int cellX, double cellElevation) {
+            float distX = GMath.Abs(viewpoint.X - cellX) * viewpoint.CellResoulution;
+            float distY = GMath.Abs(viewpoint.Y - cellY) * viewpoint.CellResoulution;
+
+            double curvature = (GMath.Pow(distX, 2) + GMath.Pow(distY, 2)) / earthDiameter;
+            float distZ = (float)(cellElevation - curvature + lightRefraction * curvature - viewpoint.Elevation);
+
+            return new float[3] { distY, distX, distZ };
+        }
+
+        [Cudafy]
+        private static void GetNeighborCells(int cellY, int cellX, Orientation cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX) {
+            losCellsDict.TryGetValue(cellOrientation, out LosCells losCells);
+            adjacentX = cellX + losCells.XCell1;
+            adjacentY = cellY + losCells.YCell1;
+            offsetX = cellX + losCells.XCell2;
+            offsetY = cellY + losCells.YCell2;
         }
 
         private struct LosCells {

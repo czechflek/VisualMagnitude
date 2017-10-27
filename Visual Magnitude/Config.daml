@@ -1,12 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<ArcGIS defaultAssembly="Visual Magnitude.dll"
-        defaultNamespace="Visual_Magnitude"
-        xmlns="http://schemas.esri.com/DADF/Registry"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://schemas.esri.com/DADF/Registry file:///C:/Program%20Files/ArcGIS/Pro/bin/ArcGIS.Desktop.Framework.xsd">
-
+﻿<ArcGIS defaultAssembly="Visual Magnitude.dll" defaultNamespace="Visual_Magnitude" xmlns="http://schemas.esri.com/DADF/Registry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.esri.com/DADF/Registry file:///C:/Program%20Files/ArcGIS/Pro/bin/ArcGIS.Desktop.Framework.xsd">
   <AddInInfo id="{794a42e9-4829-4a26-998e-d46557d8453e}" version="1.0" desktopVersion="2.0.8933">
-    <Name>Visual_Magnitude</Name>   
+    <Name>Visual_Magnitude</Name>
     <Description>Visual_Magnitude description</Description>
     <Image>Images\AddinDesktop32.png</Image>
     <Author>kuba</Author>
@@ -16,28 +10,28 @@
     <!-- Note subject can be one or more of these topics:
                     Content, Framework, Editing, Geodatabase, Geometry, Geoprocessing, Layouts, Map Authoring, Map Exploration -->
   </AddInInfo>
-
   <modules>
-    <insertModule id="Visual_Magnitude_Module" className="Module1" autoLoad="false" caption="Module1">
+    <insertModule id="Visual_Magnitude_Module" className="Visual_Magnitude_Module" autoLoad="false" caption="Visual_Magnitude_Module">
       <!-- uncomment to have the control hosted on a separate tab-->
       <tabs>
         <!--<tab id="Visual_Magnitude_Tab1" caption="New Tab">
           <group refID="Visual_Magnitude_Group1"/>
         </tab>-->
       </tabs>
-              
       <groups>
         <!-- comment this out if you have no controls on the Addin tab to avoid
               an empty group-->
         <group id="Visual_Magnitude_Group1" caption="Group 1" appearsOnAddInTab="true">
           <!-- host controls within groups -->
+          <button refID="Visual_Magnitude_Button1" size="large" />
         </group>
       </groups>
-      
       <controls>
         <!-- add your controls here -->
-      </controls> 
-      
+        <button id="Visual_Magnitude_Button1" caption="Start" className="StartButton" loadOnClick="true" smallImage="Images\GenericButtonBlue16.png" largeImage="Images\GenericButtonBlue32.png">
+          <tooltip heading="Tooltip Heading">Tooltip text<disabledText /></tooltip>
+        </button>
+      </controls>
     </insertModule>
   </modules>
 </ArcGIS>

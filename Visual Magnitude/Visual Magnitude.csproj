@@ -100,8 +100,9 @@
     <AddInContent Include="DarkImages\AddInDesktop32.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StartButton.cs" />
     <Compile Include="SpatialUtils.cs" />
-    <Compile Include="Module1.cs" />
+    <Compile Include="VisualMagnitudeModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +115,10 @@
     <Resource Include="Readme\example_source_code.cs.txt" />
     <Resource Include="Readme\ILSpy-license.txt" />
     <Resource Include="Readme\README.txt" />
+    <AddInContent Include="Images\GenericButtonBlue16.png" />
+    <AddInContent Include="Images\GenericButtonBlue32.png" />
+    <AddInContent Include="DarkImages\GenericButtonBlue16.png" />
+    <AddInContent Include="DarkImages\GenericButtonBlue32.png" />
     <Content Include="Tools\cudafycl.exe" />
     <Content Include="Tools\CudafyViewer.exe" />
   </ItemGroup>
