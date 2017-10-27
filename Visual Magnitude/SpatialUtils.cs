@@ -39,9 +39,32 @@ namespace Visual_Magnitude {
 
         }
 
+        /// <summary>
+        /// Calculate the weight of the cell adjacent to the current one.
+        /// </summary>
+        /// <param name="viewpoint">Viewpoint properties</param>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <param name="cellOrientation">Orientation of the cell</param>
+        /// <returns>Weight of the adjacent cell</returns>
         [Cudafy]
-        private static void InterpolateWeight() {
+        private static double InterpolateWeight(ViewpointProps viewpoint, int cellY, int cellX, Orientation cellOrientation) {
+            losCellsDict.TryGetValue(cellOrientation, out LosCells losCells);
+            int adjacentX = cellX + losCells.XCell1;
+            int adjacentY = cellX + losCells.XCell1;
+            int offsetX = cellX + losCells.XCell1;
+            int offsetY = cellX + losCells.XCell1;
 
+            float cellAspect = (float)GetViewingAspect(viewpoint, viewpoint.Y, viewpoint.X);
+            float adjacentAspect = (float)GetViewingAspect(viewpoint, adjacentY, adjacentX);
+            float offsetAspect = (float)GetViewingAspect(viewpoint, offsetY, offsetX);
+
+            double total = GMath.Abs(adjacentAspect - cellAspect) + GMath.Abs(offsetAspect - cellAspect);
+
+            if (total == 0)
+                return 1.0;
+            else
+                return GMath.Abs(offsetAspect - cellAspect) / total;
         }
 
         /// <summary>
@@ -62,12 +85,20 @@ namespace Visual_Magnitude {
             int yCell2;
             int xCell2;
 
-            public LosCells(int yCell1, int xCell1, int yCell2, int xCell2) {
+            public LosCells(int yCell1, int xCell1, int yCell2, int xCell2) : this() {
                 this.yCell1 = yCell1;
                 this.xCell1 = xCell1;
                 this.yCell2 = yCell2;
                 this.xCell2 = xCell2;
             }
+
+            public int YCell1 { get; set; }
+
+            public int XCell1 { get; set; }
+
+            public int YCell2 { get; set; }
+
+            public int XCell2 { get; set; }
         }
 
         public class ViewpointProps {
