@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Visual_Magnitude {
     class SpatialUtils {
-        public enum Orientation { N, NNE, NE, ENE, E, ESE, ES, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW }
+        private enum Orientation { N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW }
 
         private static Dictionary<Orientation, LosCells> losCellsDict;
         private const double radInDeg = 57.2957795;
@@ -17,7 +17,7 @@ namespace Visual_Magnitude {
         private double cellResolution;
         private ViewpointProps viewpoint;
 
-        private static double[,] elevationMap;
+        private GeoMap elevationMap;
 
 
 
@@ -37,7 +37,7 @@ namespace Visual_Magnitude {
                 { Orientation.ENE, new LosCells(0, -1, 1, -1) },
                 { Orientation.E, new LosCells(0, -1, 0, -1) },
                 { Orientation.ESE, new LosCells(0, -1, -1, -1) },
-                { Orientation.ES, new LosCells(-1, -1, -1, -1) },
+                { Orientation.SE, new LosCells(-1, -1, -1, -1) },
                 { Orientation.SSE, new LosCells(-1, 0, -1, -1) },
                 { Orientation.S, new LosCells(-1, 0, -1, 0) },
                 { Orientation.SSW, new LosCells(-1, 0, -1, 1) },
@@ -46,12 +46,19 @@ namespace Visual_Magnitude {
             };
         }
 
-        public SpatialUtils(ViewpointProps viewpoint, double cellResolution) {
-            this.Viewpoint = viewpoint;
+        public SpatialUtils(ref GeoMap elevationMap, ViewpointProps viewpoint, double cellResolution) {
+            Viewpoint = viewpoint;
             this.cellResolution = cellResolution;
+            this.elevationMap = elevationMap;
         }
 
-        public void IsCellVisible(double[,] losMap, int cellY, int cellX, Orientation cellOrientation) {
+        public SpatialUtils(ref GeoMap elevationMap, double cellResolution) {
+            this.cellResolution = cellResolution;
+            ElevationMap = elevationMap;
+        }
+
+        public bool IsCellVisible(GeoMap losMap, int cellY, int cellX) {
+            Orientation cellOrientation = GetCellOrientation(cellY, cellX);
             GetNeighborCells(cellY, cellX, cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX);
 
             double adjacentWeight = InterpolateWeight(cellY, cellX, cellOrientation);
@@ -61,8 +68,10 @@ namespace Visual_Magnitude {
 
             if (viewingLos < cellLos) {
                 losMap[cellY, cellX] = cellLos;
+                return true;
             } else {
                 losMap[cellY, cellX] = viewingLos;
+                return false;
             }
         }
 
@@ -97,9 +106,16 @@ namespace Visual_Magnitude {
         /// <param name="cellX">X coordinate of the cell</param>
         /// <returns>Angle (radians)</returns>
         private double GetViewingAspect(int cellY, int cellX) {
-            return Math.Atan2((cellY - Viewpoint.Y) * Viewpoint.CellResoulution, (cellX - Viewpoint.X) * Viewpoint.CellResoulution);
+            return Math.Atan2((cellY - Viewpoint.Y) * cellResolution, (cellX - Viewpoint.X) * cellResolution);
         }
 
+        /// <summary>
+        /// Calculate the angle from origin to the specified point. The angle is compensated for Earth's curvature and light 
+        /// diffraction.
+        /// </summary>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <returns>Vertical angle from origin to the specified point in radians relative to horizon.</returns>
         private double GetViewingSlope(int cellY, int cellX) {
             GetYXZDistances(cellY, cellX, ElevationMap[cellY, cellX], out double distY, out double distX, out double distZ);
             double directDistance = Math.Sqrt(Math.Pow(distY, 2) + Math.Pow(distX, 2));
@@ -116,13 +132,23 @@ namespace Visual_Magnitude {
         /// <param name="cellElevation">Elevation of the cell</param>
         /// <returns></returns>
         private void GetYXZDistances(int cellY, int cellX, double cellElevation, out double distY, out double distX, out double distZ) {
-            distX = Math.Abs(Viewpoint.X - cellX) * Viewpoint.CellResoulution;
-            distY = Math.Abs(Viewpoint.Y - cellY) * Viewpoint.CellResoulution;
+            distX = Math.Abs(Viewpoint.X - cellX) * cellResolution;
+            distY = Math.Abs(Viewpoint.Y - cellY) * cellResolution;
 
             double curvature = (Math.Pow(distX, 2) + Math.Pow(distY, 2)) / earthDiameter;
             distZ = (float)(cellElevation - curvature + lightRefraction * curvature - Viewpoint.Elevation);
         }
 
+        /// <summary>
+        /// Get cells through which line of sight passes.
+        /// </summary>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <param name="cellOrientation">position of the cell relative to the viewpoint</param>
+        /// <param name="adjacentY">Y coordinate of the adjacent cell</param>
+        /// <param name="adjacentX">X coordinate of the adjacent cell</param>
+        /// <param name="offsetY">Y coordinate of the offset cell</param>
+        /// <param name="offsetX">X coordinate of the offset cell</param>
         private void GetNeighborCells(int cellY, int cellX, Orientation cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX) {
             losCellsDict.TryGetValue(cellOrientation, out LosCells losCells);
             adjacentX = cellX + losCells.XCell1;
@@ -131,6 +157,113 @@ namespace Visual_Magnitude {
             offsetY = cellY + losCells.YCell2;
         }
 
+        /// <summary>
+        ///  Calculate West-East and North-South components of the cell slope.
+        /// </summary>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <param name="westeast">output West-East component</param>
+        /// <param name="northsouth">output North-South component</param>
+        private void GetCellSlopeComponents(int cellY, int cellX, out double westeast, out double northsouth) {
+            double cn = Math.Sqrt(2);
+            try {
+                westeast = ((cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY, cellX - 1] + cn * ElevationMap[cellY + 1, cellX - 1])
+                           - (cn * ElevationMap[cellY - 1, cellX + 1] + ElevationMap[cellY, cellX + 1] + cn * ElevationMap[cellY + 1, cellX + 1]))
+                           / (8 * cellResolution);
+            } catch (IndexOutOfRangeException) {
+                westeast = 0;
+                throw;
+            }
+
+            try {
+                northsouth = ((cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY - 1, cellX] + cn * ElevationMap[cellY - 1, cellX + 1])
+                           - (cn * ElevationMap[cellY + 1, cellX - 1] + ElevationMap[cellY + 1, cellX] + cn * ElevationMap[cellY + 1, cellX + 1]))
+                           / (8 * cellResolution);
+            } catch (IndexOutOfRangeException) {
+                northsouth = 0;
+                throw;
+            }
+        }
+
+        private Orientation GetCellOrientation(int cellY, int cellX) {
+            int orientationCode = GetCellOrientationCode(cellY, cellX);
+            switch (orientationCode) {
+                case 0x0020:
+                    return Orientation.W;
+                case 0x0100:
+                    return Orientation.WNW;
+                case 0x1200:
+                    return Orientation.NW;
+                case 0x0000:
+                    return Orientation.NNW;
+                case 0x0002:
+                    return Orientation.N;
+                case 0x0001:
+                    return Orientation.NNE;
+                case 0x2101:
+                    return Orientation.NE;
+                case 0x1001:
+                    return Orientation.ENE;
+                case 0x0021:
+                    return Orientation.E;
+                case 0x1011:
+                    return Orientation.ESE;
+                case 0x1211:
+                    return Orientation.SE;
+                case 0x1111:
+                    return Orientation.SSE;
+                case 0x0012:
+                    return Orientation.S;
+                case 0x1110:
+                    return Orientation.SSW;
+                case 0x2110:
+                    return Orientation.SW;
+                case 0x0110:
+                    return Orientation.WSW;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        private int GetCellOrientationCode(int cellY, int cellX) {
+            int relativeX = cellX - viewpoint.X;
+            int relativeY = cellY - viewpoint.Y;
+            int orientation = 0;
+
+            if(relativeX > 0) {
+                orientation += 0x0001;
+            } else if(relativeX == 0) {
+                orientation += 0x0002;
+            }
+
+            if (relativeY > 0) {
+                orientation += 0x0010;
+            } else if (relativeY == 0) {
+                orientation += 0x0020;
+            }
+
+            if (relativeX == relativeY) {
+                orientation += 0x1200;
+            } else if (relativeX == -relativeY) {
+                orientation += 0x2100;
+            } else if(!(relativeX == 0 || relativeY == 0)) {
+                if(relativeY > relativeX) {
+                    orientation += 0x0100;
+                }
+                if (relativeY > -relativeX) {
+                    orientation += 0x1000;
+                }
+            }
+
+            return orientation;
+        }
+
+        /// <summary>
+        /// Create a normalized vector representation of two angles - azimuth and slope.
+        /// </summary>
+        /// <param name="azimuth">azimuth (horizontal angle, radians)</param>
+        /// <param name="slope">slope (vertical angle, radians)</param>
+        /// <returns>normalized 3D vector</returns>
         private static Vector3 MakeNormalizedVector(double azimuth, double slope) {
             float x = (float)(Math.Sin(azimuth) * Math.Cos(slope));
             float y = (float)(Math.Cos(azimuth) * Math.Cos(slope));
@@ -139,13 +272,19 @@ namespace Visual_Magnitude {
             return Vector3.Normalize(new Vector3(x, y, z));
         }
 
-        private double GetVectorAngle(Vector3 normal, Vector3 direction) {
-            return Math.Acos(Vector3.Dot(normal, direction));
+        /// <summary>
+        /// Calculate the angle between two vectors.
+        /// </summary>
+        /// <param name="viewpointToCell">vector from the viewpoint to the cell</param>
+        /// <param name="cellNormal">normal vector of the cell</param>
+        /// <returns>angle between two vectors in radians</returns>
+        private double GetVectorAngle(Vector3 viewpointToCell, Vector3 cellNormal) {
+            return Math.Acos(Vector3.Dot(viewpointToCell, cellNormal));
         }
 
 
         public ViewpointProps Viewpoint { get => viewpoint; set => viewpoint = value; }
-        public static double[,] ElevationMap { get => elevationMap; set => elevationMap = value; }
+        public GeoMap ElevationMap { get => elevationMap; set => elevationMap = value; }
 
         private struct LosCells {
             int yCell1;
@@ -172,22 +311,24 @@ namespace Visual_Magnitude {
         public class ViewpointProps {
             int y;
             int x;
-            double cellResoulution;
             double elevation;
 
-            public ViewpointProps(int y, int x, double cellResoulution, double elevation) {
+            public ViewpointProps(int y, int x, double elevation) {
                 this.y = y;
                 this.x = x;
                 this.elevation = elevation;
+            }
+
+            public ViewpointProps(int y, int x) {
+                this.y = y;
+                this.x = x;
             }
 
             public int Y { get; set; }
 
             public int X { get; set; }
 
-            public int CellResoulution { get; set; }
-
-            public int Elevation { get; set; }
+            public double Elevation { get; set; }
         }
     }
 

@@ -38,9 +38,6 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cudafy.NET, Version=1.29.5576.13786, Culture=neutral, PublicKeyToken=63a4c9931616906b, processorArchitecture=MSIL">
-      <HintPath>..\packages\CUDAfy.NET.1.29.5576.13786\lib\net40\Cudafy.NET.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
@@ -102,6 +99,9 @@
     <AddInContent Include="DarkImages\AddInDesktop32.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="VisualMagnitudeWorker.cs" />
+    <Compile Include="WorkManager.cs" />
+    <Compile Include="GeoMap.cs" />
     <Compile Include="StartButton.cs" />
     <Compile Include="SpatialUtils.cs" />
     <Compile Include="VisualMagnitudeModule.cs" />
@@ -109,7 +109,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Tools\place_these_executables_in_same_folder_as_Cudafy.NET.dll_" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Readme\CUDA.NET.Readme.txt" />
@@ -121,8 +120,9 @@
     <AddInContent Include="Images\GenericButtonBlue32.png" />
     <AddInContent Include="DarkImages\GenericButtonBlue16.png" />
     <AddInContent Include="DarkImages\GenericButtonBlue32.png" />
-    <Content Include="Tools\cudafycl.exe" />
-    <Content Include="Tools\CudafyViewer.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Tools\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!--

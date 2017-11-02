@@ -11,6 +11,15 @@ namespace Visual_Magnitude {
             ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Started");
 
             System.Diagnostics.Debug.WriteLine("************************************************************************");
+
+            GeoMap geoMapMock = GeoMap.CreateMock(20, 20);
+            WorkManager workManager = new WorkManager(4);
+            workManager.AddWork(new SpatialUtils.ViewpointProps(10, 10));
+            workManager.AddWork(new SpatialUtils.ViewpointProps(12, 10));
+            workManager.AddWork(new SpatialUtils.ViewpointProps(11, 10));
+            workManager.StartWorking(ref geoMapMock);
+            System.Diagnostics.Debug.WriteLine("threads started");
+
         }
     }
 }
