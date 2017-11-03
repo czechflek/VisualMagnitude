@@ -21,9 +21,10 @@ namespace Visual_Magnitude {
 
         public static GeoMap CreateMock(int dimensionY, int dimensionX) {
             GeoMap map = new GeoMap(dimensionY, dimensionX);
+            Random rnd = new Random();
             for (int y = 0; y < dimensionY; y++) {
                 for (int x = 0; x < dimensionX; x++) {
-                    map[y, x] = 0.1 * (y + x);
+                    map[y, x] = rnd.Next(1,3) * (y + x);
                 }
             }
             return map;

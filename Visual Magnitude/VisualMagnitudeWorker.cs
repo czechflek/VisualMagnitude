@@ -12,11 +12,13 @@ namespace Visual_Magnitude {
         private GeoMap elevationMap;
         private double elevationOffset;
         private ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue;
+        private Sumator sumator;
 
-        public VisualMagnitudeWorker(ref ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue, ref GeoMap elevationMap, double cellResolution) {
+        public VisualMagnitudeWorker(ref ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue, ref GeoMap elevationMap, ref Sumator sumator, double cellResolution) {
             spatialUtils = new SpatialUtils(ref elevationMap, cellResolution);
             this.workQueue = workQueue;
             this.elevationMap = elevationMap;
+            this.sumator = sumator;
         }
 
         public void Start() {
@@ -24,24 +26,27 @@ namespace Visual_Magnitude {
 
             while (workQueue.TryDequeue(out SpatialUtils.ViewpointProps viewpoint)) {                
                 CalculateVisualMagnitude(viewpoint, losMap);
-                System.Diagnostics.Debug.WriteLine("[{0},{1}]", viewpoint.Y, viewpoint.X); //ALL VP VALUES ARE 0 (Pravdepodobne protoze Workmanager zemrel)
-                System.Diagnostics.Debug.WriteLine("El {0}", elevationMap[10, 10]); //ALL VP VALUES ARE 0 (Pravdepodobne protoze Workmanager zemrel)
             }
         }
 
         private void CalculateVisualMagnitude(SpatialUtils.ViewpointProps viewpoint, GeoMap losMap) {
+            double visualMagnitude;
+
             spatialUtils.Viewpoint = viewpoint;
             viewpoint.Elevation = elevationMap[viewpoint.Y, viewpoint.X] + elevationOffset;
 
-            losMap[viewpoint.Y, viewpoint.X] = GeoMap.UndefinedValue; //initialize LOS of the viewpoint
+            losMap[viewpoint.Y, viewpoint.X] = GeoMap.UndefinedValue; //initialize LOS of the viewpoint            
 
             //find out the maximum distance to the edge of map
             int maxDistance = GetMaximumDistance(viewpoint);
+
             for (int i = 1; i < maxDistance; i++) {
                 GeoMap.Ring ring = elevationMap.GetRing(viewpoint.Y, viewpoint.X, i);
                 foreach (int[] item in ring) {
                     if (spatialUtils.IsCellVisible(losMap, item[0], item[1])) {
-                        //System.Diagnostics.Debug.WriteLine("[{0},{1}] = visible", viewpoint.Y, viewpoint.X);
+                        visualMagnitude = spatialUtils.GetVisualMagnutude(item[0], item[1]);
+                        sumator.AddResult(new Sumator.VisualMagnitudeResult(item[0], item[1], visualMagnitude));
+                        System.Diagnostics.Debug.WriteLine("{0}", visualMagnitude);
                     }
                     //System.Diagnostics.Debug.WriteLine("[{0},{1}] = done", viewpoint.Y, viewpoint.X);
 

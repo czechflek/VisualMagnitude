@@ -57,6 +57,13 @@ namespace Visual_Magnitude {
             ElevationMap = elevationMap;
         }
 
+        /// <summary>
+        /// Determine if the cell is visible from the viewpoint. All cells in LOS cell-viewpoint have to be previously calculated and present in LOS map.
+        /// </summary>
+        /// <param name="losMap">Map which contains LOS values of the cells</param>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <returns></returns>
         public bool IsCellVisible(GeoMap losMap, int cellY, int cellX) {
             Orientation cellOrientation = GetCellOrientation(cellY, cellX);
             GetNeighborCells(cellY, cellX, cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX);
@@ -68,17 +75,42 @@ namespace Visual_Magnitude {
 
             if (viewingLos < cellLos) {
                 losMap[cellY, cellX] = cellLos;
-                return true;
+                return false;
             } else {
                 losMap[cellY, cellX] = viewingLos;
-                return false;
+                return true;
             }
+        }
+
+        /// <summary>
+        /// Calculate visual magnitude of the cell relative to the origin.
+        /// </summary>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <returns>visual magnitude value</returns>
+        public double GetVisualMagnutude(int cellY, int cellX) {
+            double distance = GetDistance(cellY, cellX);
+            
+            double viewingSlope = GetViewingSlope(cellY, cellX);            
+            double viewingAspect = GetViewingAspect(cellY, cellX);
+            Vector3 viewVector = MakeNormalizedVector(viewingAspect, viewingSlope);
+
+            double cellSlope = GetCellSlope(cellY, cellX);
+            double cellAspect = GetCellAspect(cellY, cellX);
+            Vector3 cellNormal = MakeNormalizedVector(cellAspect, cellSlope);
+
+            double vectorAngle = GetVectorAngle(viewVector, cellNormal);
+
+            if(vectorAngle < Math.PI / 2) {
+                return 0D;
+            }
+
+            return (Math.Pow(cellResolution, 2) / Math.Pow(distance, 2)) * Math.Abs(Math.Cos(vectorAngle));
         }
 
         /// <summary>
         /// Calculate the weight of the cell adjacent to the current one.
         /// </summary>
-        /// <param name="viewpoint">Viewpoint properties</param>
         /// <param name="cellY">Y coordinate of the cell</param>
         /// <param name="cellX">X coordinate of the cell</param>
         /// <param name="cellOrientation">Orientation of the cell</param>
@@ -101,12 +133,11 @@ namespace Visual_Magnitude {
         /// <summary>
         /// Calculate viewing angle from the viewpoint to the cell in radians.
         /// </summary>
-        /// <param name="viewpoint">Viewpoint properties</param>
         /// <param name="cellY">Y coordinate of the cell</param>
         /// <param name="cellX">X coordinate of the cell</param>
         /// <returns>Angle (radians)</returns>
         private double GetViewingAspect(int cellY, int cellX) {
-            return Math.Atan2((cellY - Viewpoint.Y) * cellResolution, (cellX - Viewpoint.X) * cellResolution);
+            return (Math.Atan2((cellY - Viewpoint.Y) * cellResolution, (cellX - Viewpoint.X) * cellResolution) + 2.5 * Math.PI) % (2 * Math.PI);
         }
 
         /// <summary>
@@ -124,13 +155,49 @@ namespace Visual_Magnitude {
         }
 
         /// <summary>
-        /// Calculate difference between origin and cell for y, x coordinates and elevation adjusted for Earth's curvature.
+        /// Calculate cell slope.
         /// </summary>
-        /// <param name="viewpoint">Viewpoint properties</param>
         /// <param name="cellY">Y coordinate of the cell</param>
         /// <param name="cellX">X coordinate of the cell</param>
-        /// <param name="cellElevation">Elevation of the cell</param>
+        /// <returns>cell slope in radians</returns>
+        private double GetCellSlope(int cellY, int cellX) {
+            GetCellSlopeComponents(cellY, cellX, out double westeast, out double northsouth);
+
+            return Math.Sqrt(Math.Pow(westeast, 2) + Math.Pow(northsouth, 2)) + (Math.PI / 2);
+        }
+
+        /// <summary>
+        /// Calculate cell aspect. 0 = North, Pi/2 = East, Pi = South, 3Pi/2 = West
+        /// </summary>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <returns>cell acpect in radians</returns>
+        private double GetCellAspect(int cellY, int cellX) {
+            GetCellSlopeComponents(cellY, cellX, out double westeast, out double northsouth);
+
+            return (int) Math.Floor((Math.Atan2(-1 * northsouth, -1 * westeast) + 3.5 * Math.PI)) % (int) (2 * Math.PI); 
+        }
+
+        /// <summary>
+        /// Calculate distance from the viewpoint to the cell.
+        /// </summary>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
         /// <returns></returns>
+        private double GetDistance(int cellY, int cellX) {
+            GetYXZDistances(cellY, cellX, ElevationMap[cellY, cellX], out double distY, out double distX, out double distZ);
+            return Math.Sqrt(Math.Pow(distX, 2) + Math.Pow(distY, 2) + Math.Pow(distZ, 2));
+        }
+
+        /// <summary>
+        /// Calculate difference between origin and cell for y, x coordinates and elevation adjusted for Earth's curvature.
+        /// </summary>
+        /// <param name = "cellY" > Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <param name="cellElevation">Elevation of the cell</param>
+        /// <param name="distY">distance on Y axis</param>
+        /// <param name="distX">distance on X axis</param>
+        /// <param name="distZ">distance on Z axis</param>
         private void GetYXZDistances(int cellY, int cellX, double cellElevation, out double distY, out double distX, out double distZ) {
             distX = Math.Abs(Viewpoint.X - cellX) * cellResolution;
             distY = Math.Abs(Viewpoint.Y - cellY) * cellResolution;
@@ -172,7 +239,7 @@ namespace Visual_Magnitude {
                            / (8 * cellResolution);
             } catch (IndexOutOfRangeException) {
                 westeast = 0;
-                throw;
+
             }
 
             try {
@@ -181,7 +248,6 @@ namespace Visual_Magnitude {
                            / (8 * cellResolution);
             } catch (IndexOutOfRangeException) {
                 northsouth = 0;
-                throw;
             }
         }
 

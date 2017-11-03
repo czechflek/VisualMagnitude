@@ -99,6 +99,7 @@
     <AddInContent Include="DarkImages\AddInDesktop32.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Sumator.cs" />
     <Compile Include="VisualMagnitudeWorker.cs" />
     <Compile Include="WorkManager.cs" />
     <Compile Include="GeoMap.cs" />
@@ -111,8 +112,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Readme\CUDA.NET.Readme.txt" />
-    <Resource Include="Readme\CUDAfy-License.txt" />
     <Resource Include="Readme\example_source_code.cs.txt" />
     <Resource Include="Readme\ILSpy-license.txt" />
     <Resource Include="Readme\README.txt" />
@@ -133,6 +132,8 @@
   -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PackageAction>BuildDefault</PackageAction>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PackageAction>BuildDefault</PackageAction>
