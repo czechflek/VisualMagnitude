@@ -230,9 +230,9 @@ namespace Visual_Magnitude {
             int relativeY = cellY - viewpoint.Y;
             int orientation = 0;
 
-            if(relativeX > 0) {
+            if (relativeX > 0) {
                 orientation += 0x0001;
-            } else if(relativeX == 0) {
+            } else if (relativeX == 0) {
                 orientation += 0x0002;
             }
 
@@ -246,8 +246,8 @@ namespace Visual_Magnitude {
                 orientation += 0x1200;
             } else if (relativeX == -relativeY) {
                 orientation += 0x2100;
-            } else if(!(relativeX == 0 || relativeY == 0)) {
-                if(relativeY > relativeX) {
+            } else if (!(relativeX == 0 || relativeY == 0)) {
+                if (relativeY > relativeX) {
                     orientation += 0x0100;
                 }
                 if (relativeY > -relativeX) {
@@ -309,27 +309,27 @@ namespace Visual_Magnitude {
         }
 
         public class ViewpointProps {
-            int y;
-            int x;
-            double elevation;
+            private int y;
+            private int x;
+            private double elevation;
 
             public ViewpointProps(int y, int x, double elevation) {
-                this.y = y;
-                this.x = x;
-                this.elevation = elevation;
+                this.Y = y;
+                this.X = x;
+                this.Elevation = elevation;
             }
 
             public ViewpointProps(int y, int x) {
-                this.y = y;
-                this.x = x;
+                this.Y = y;
+                this.X = x;
+                System.Diagnostics.Debug.WriteLine("Construct VP: [{0},{1}]", Y, X);
             }
 
-            public int Y { get; set; }
+            public int Y { get => y; set => y = value; }
+            public int X { get => x; set => x = value; }
+            public double Elevation { get => elevation; set => elevation = value; }
 
-            public int X { get; set; }
-
-            public double Elevation { get; set; }
         }
-    }
 
+    }
 }

@@ -24,7 +24,8 @@ namespace Visual_Magnitude {
 
             while (workQueue.TryDequeue(out SpatialUtils.ViewpointProps viewpoint)) {                
                 CalculateVisualMagnitude(viewpoint, losMap);
-                System.Diagnostics.Debug.WriteLine("[{0},{1}]", viewpoint.Y, viewpoint.X); //ALL VP VALUES ARE 0
+                System.Diagnostics.Debug.WriteLine("[{0},{1}]", viewpoint.Y, viewpoint.X); //ALL VP VALUES ARE 0 (Pravdepodobne protoze Workmanager zemrel)
+                System.Diagnostics.Debug.WriteLine("El {0}", elevationMap[10, 10]); //ALL VP VALUES ARE 0 (Pravdepodobne protoze Workmanager zemrel)
             }
         }
 
