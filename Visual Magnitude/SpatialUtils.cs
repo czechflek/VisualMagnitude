@@ -46,14 +46,14 @@ namespace Visual_Magnitude {
             };
         }
 
-        public SpatialUtils(ref GeoMap elevationMap, ViewpointProps viewpoint, double cellResolution) {
+        public SpatialUtils(ref GeoMap elevationMap, ViewpointProps viewpoint) {
             Viewpoint = viewpoint;
-            this.cellResolution = cellResolution;
+            this.cellResolution = elevationMap.CellSize;
             this.elevationMap = elevationMap;
         }
 
-        public SpatialUtils(ref GeoMap elevationMap, double cellResolution) {
-            this.cellResolution = cellResolution;
+        public SpatialUtils(ref GeoMap elevationMap) {
+            this.cellResolution = elevationMap.CellSize;
             ElevationMap = elevationMap;
         }
 
@@ -233,21 +233,23 @@ namespace Visual_Magnitude {
         /// <param name="northsouth">output North-South component</param>
         private void GetCellSlopeComponents(int cellY, int cellX, out double westeast, out double northsouth) {
             double cn = Math.Sqrt(2);
+
+            if(cellX <= 0 || cellY <= 0 || cellX-1 >= ElevationMap.GetLength(1)-1 || cellY >= ElevationMap.GetLength(0)-1) {
+                northsouth = westeast = 0;
+                return;
+            }
+
             try {
                 westeast = ((cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY, cellX - 1] + cn * ElevationMap[cellY + 1, cellX - 1])
                            - (cn * ElevationMap[cellY - 1, cellX + 1] + ElevationMap[cellY, cellX + 1] + cn * ElevationMap[cellY + 1, cellX + 1]))
                            / (8 * cellResolution);
-            } catch (IndexOutOfRangeException) {
-                westeast = 0;
 
-            }
-
-            try {
                 northsouth = ((cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY - 1, cellX] + cn * ElevationMap[cellY - 1, cellX + 1])
                            - (cn * ElevationMap[cellY + 1, cellX - 1] + ElevationMap[cellY + 1, cellX] + cn * ElevationMap[cellY + 1, cellX + 1]))
                            / (8 * cellResolution);
             } catch (IndexOutOfRangeException) {
-                northsouth = 0;
+                System.Diagnostics.Debug.WriteLine("{0}, {1}", cellX, cellY);
+                northsouth = westeast = 0;
             }
         }
 

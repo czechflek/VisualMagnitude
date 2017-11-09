@@ -9,18 +9,19 @@ namespace Visual_Magnitude {
     class GeoMap {
         private double[,] geoMap;
         public const double UndefinedValue = -99D;
+        private double cellSize = 1;        
 
         public double this[int y, int x] {
             get { return geoMap[y, x]; }
             set { geoMap[y, x] = value; }
         }
 
-        public GeoMap(int dimensionY, int dimensionX) {
+        public GeoMap(int dimensionX, int dimensionY) {
             geoMap = new double[dimensionY, dimensionX];
         }
 
         public static GeoMap CreateMock(int dimensionY, int dimensionX) {
-            GeoMap map = new GeoMap(dimensionY, dimensionX);
+            GeoMap map = new GeoMap(dimensionX, dimensionY);
             Random rnd = new Random();
             for (int y = 0; y < dimensionY; y++) {
                 for (int x = 0; x < dimensionX; x++) {
@@ -28,6 +29,14 @@ namespace Visual_Magnitude {
                 }
             }
             return map;
+        }
+
+        public void ImportData(Array data) {
+            for (int x = 0; x < data.GetLength(0); x++) {
+                for (int y = 0; y < data.GetLength(1); y++) {
+                    geoMap[y, x] = Convert.ToDouble(data.GetValue(x, y));
+                }
+            }
         }
 
         public void InitializeOmittedRings(int viewpointY, int viewpointX, int omittedDistance) {
@@ -90,6 +99,8 @@ namespace Visual_Magnitude {
 
             return new Ring(topleft, topright, bottomright, bottomleft, inbounds);
         }
+
+        public double CellSize { get => cellSize; set => cellSize = value; }
 
         public class Ring : IEnumerable {
             int[] topleft;

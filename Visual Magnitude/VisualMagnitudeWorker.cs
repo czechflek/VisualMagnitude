@@ -14,8 +14,8 @@ namespace Visual_Magnitude {
         private ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue;
         private Sumator sumator;
 
-        public VisualMagnitudeWorker(ref ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue, ref GeoMap elevationMap, ref Sumator sumator, double cellResolution) {
-            spatialUtils = new SpatialUtils(ref elevationMap, cellResolution);
+        public VisualMagnitudeWorker(ref ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue, ref GeoMap elevationMap, ref Sumator sumator) {
+            spatialUtils = new SpatialUtils(ref elevationMap);
             this.workQueue = workQueue;
             this.elevationMap = elevationMap;
             this.sumator = sumator;
@@ -46,7 +46,7 @@ namespace Visual_Magnitude {
                     if (spatialUtils.IsCellVisible(losMap, item[0], item[1])) {
                         visualMagnitude = spatialUtils.GetVisualMagnutude(item[0], item[1]);
                         sumator.AddResult(new Sumator.VisualMagnitudeResult(item[0], item[1], visualMagnitude));
-                        System.Diagnostics.Debug.WriteLine("{0}", visualMagnitude);
+                        //System.Diagnostics.Debug.WriteLine("{0}", visualMagnitude);
                     }
                     //System.Diagnostics.Debug.WriteLine("[{0},{1}] = done", viewpoint.Y, viewpoint.X);
 

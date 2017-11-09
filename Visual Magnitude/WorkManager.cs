@@ -25,7 +25,7 @@ namespace Visual_Magnitude {
             sumator.Start();
             startingQueueSize = workQueue.Count;
             for (int i = 0; i < threadCount; i++) {
-                VisualMagnitudeWorker worker = new VisualMagnitudeWorker(ref workQueue, ref elevationMap, ref sumator, 1);
+                VisualMagnitudeWorker worker = new VisualMagnitudeWorker(ref workQueue, ref elevationMap, ref sumator);
                 Thread thread = new Thread(worker.Start);
                 threads[i] = thread;
                 thread.Start();
