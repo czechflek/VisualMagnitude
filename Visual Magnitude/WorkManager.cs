@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Visual_Magnitude {
@@ -7,7 +8,8 @@ namespace Visual_Magnitude {
         private Sumator sumator;
         private int threadCount;
         private int startingQueueSize;
-        private Thread[] threads;  
+        private Thread[] threads;
+        private int runningThreads;
 
         public WorkManager(int threadCount) {
             this.threadCount = threadCount;
@@ -24,11 +26,20 @@ namespace Visual_Magnitude {
             sumator = new Sumator(elevationMap.GetLength(0), elevationMap.GetLength(1));
             sumator.Start();
             startingQueueSize = workQueue.Count;
+            runningThreads = threadCount;
             for (int i = 0; i < threadCount; i++) {
                 VisualMagnitudeWorker worker = new VisualMagnitudeWorker(ref workQueue, ref elevationMap, ref sumator);
                 Thread thread = new Thread(worker.Start);
                 threads[i] = thread;
                 thread.Start();
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void ThreadFinished() {
+            runningThreads--;
+            if(runningThreads <= 0) {
+                sumator.Stop();
             }
         }
     }

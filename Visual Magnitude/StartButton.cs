@@ -28,6 +28,7 @@ namespace Visual_Magnitude {
             }
             await QueuedTask.Run(() => {
                 Raster raster = currentRasterLayer.GetRaster();
+                                
                 //ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(raster.GetBandCount().ToString());
                 PixelBlock currentPixelBlock = raster.CreatePixelBlock(raster.GetWidth(), raster.GetHeight());
                 raster.Read(0, 0, currentPixelBlock);
@@ -47,6 +48,14 @@ namespace Visual_Magnitude {
                 workManager.AddWork(new SpatialUtils.ViewpointProps(12, 10));
                 workManager.AddWork(new SpatialUtils.ViewpointProps(11, 10));
                 workManager.StartWorking(ref elevationMap);
+
+                Raster result = raster.GetRasterDataset().CreateDefaultRaster();
+                result.SetSpatialReference(raster.GetSpatialReference());
+                result.SetPixelType(RasterPixelType.DOUBLE);
+                result.SetExtent(raster.GetExtent());
+                result.SetHeight(raster.GetHeight());
+                result.SetWidth(raster.GetWidth());
+                PixelBlock resultPixelBlock = raster.CreatePixelBlock(raster.GetWidth(), raster.GetHeight());
 
 
             });
