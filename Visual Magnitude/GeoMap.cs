@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ArcGIS.Core.Data.Raster;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,25 +8,25 @@ using System.Threading.Tasks;
 
 namespace Visual_Magnitude {
     class GeoMap {
-        private double[,] geoMap;
+        public double[,] geoMap;
         public const double UndefinedValue = -99D;
-        private double cellSize = 1;        
+        private double cellSize = 1;
 
         public double this[int y, int x] {
             get { return geoMap[y, x]; }
             set { geoMap[y, x] = value; }
         }
 
-        public GeoMap(int dimensionX, int dimensionY) {
+        public GeoMap(int dimensionY, int dimensionX) {
             geoMap = new double[dimensionY, dimensionX];
         }
 
         public static GeoMap CreateMock(int dimensionY, int dimensionX) {
-            GeoMap map = new GeoMap(dimensionX, dimensionY);
+            GeoMap map = new GeoMap(dimensionY, dimensionX);
             Random rnd = new Random();
             for (int y = 0; y < dimensionY; y++) {
                 for (int x = 0; x < dimensionX; x++) {
-                    map[y, x] = rnd.Next(1,3) * (y + x);
+                    map[y, x] = y;
                 }
             }
             return map;
@@ -39,10 +40,38 @@ namespace Visual_Magnitude {
             }
         }
 
+        public void Initialize() {
+            Array.Clear(geoMap, 0, geoMap.Length);
+        }
+
+        public Raster WriteDataToRaster(Raster raster) {
+            PixelBlock pixelBlock = raster.CreatePixelBlock(raster.GetWidth(), raster.GetHeight());
+            //raster.Read(0, 0, pixelBlock);
+            pixelBlock.Clear(0);
+            System.Diagnostics.Debug.WriteLine(pixelBlock.GetPlaneCount());
+            System.Diagnostics.Debug.WriteLine(raster.GetWidth() + "x" + raster.GetHeight());
+            pixelBlock.SetPixelData(0, geoMap);
+            raster.Write(0, 0, pixelBlock);
+            //raster.Refresh();
+            return raster;
+
+        }
+
         public void InitializeOmittedRings(int viewpointY, int viewpointX, int omittedDistance) {
             for (int i = 0; i < omittedDistance; i++) {
                 throw new NotImplementedException();
             }
+        }
+
+        public double[,] Transpose() {
+            double[,] transposed = new double[geoMap.GetLength(1), geoMap.GetLength(0)];
+            for (int x = 0; x < geoMap.GetLength(1); x++) {
+                for (int y = 0; y < geoMap.GetLength(0); y++) {
+                    transposed[x, y] = geoMap[y, x];
+                }
+            }
+            return transposed;
+
         }
 
         public void ClearMap() {
@@ -72,24 +101,24 @@ namespace Visual_Magnitude {
                 topright[0] = 0;
             }
             if (topright[1] >= geoMap.GetLength(1)) {
-                topright[1] = 0;
+                topright[1] = geoMap.GetLength(1) - 1;
                 inbounds[1] = false;
             }
 
             //bottom-right corner
             int[] bottomright = new int[2] { viewpointY + distance, viewpointX + distance };
             if (bottomright[0] >= geoMap.GetLength(0)) {
-                bottomright[0] = 0;
+                bottomright[0] = geoMap.GetLength(0) - 1;
                 inbounds[2] = false;
             }
             if (bottomright[1] >= geoMap.GetLength(1)) {
-                bottomright[1] = 0;
+                bottomright[1] = geoMap.GetLength(1) - 1;
             }
 
             //bottom-left corner
             int[] bottomleft = new int[2] { viewpointY + distance, viewpointX - distance };
             if (bottomleft[0] >= geoMap.GetLength(0)) {
-                bottomleft[0] = 0;
+                bottomleft[0] = geoMap.GetLength(0) - 1;
 
             }
             if (bottomleft[1] < 0) {
@@ -125,7 +154,7 @@ namespace Visual_Magnitude {
                     }
                 }
 
-                //right row
+                //right column
                 if (inbounds[1]) {
                     for (int y = topright[0]; y < bottomright[0]; y++) {
                         yield return new int[2] { y, topright[1] };
@@ -139,7 +168,7 @@ namespace Visual_Magnitude {
                     }
                 }
 
-                //left row
+                //left column
                 if (inbounds[3]) {
                     for (int y = bottomleft[0]; y > topleft[0]; y--) {
                         yield return new int[2] { y, bottomleft[1] };

@@ -1,24 +1,21 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
 
 namespace Visual_Magnitude {
     class VisualMagnitudeWorker {
         private SpatialUtils spatialUtils;
         private int omittedRings = 0;
         private GeoMap elevationMap;
-        private double elevationOffset;
+        private double elevationOffset = 10D;
         private ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue;
         private Sumator sumator;
+        private WorkManager parent;
 
-        public VisualMagnitudeWorker(ref ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue, ref GeoMap elevationMap, ref Sumator sumator) {
+        public VisualMagnitudeWorker(ref ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue, ref GeoMap elevationMap, ref Sumator sumator, WorkManager parent) {
             spatialUtils = new SpatialUtils(ref elevationMap);
             this.workQueue = workQueue;
             this.elevationMap = elevationMap;
             this.sumator = sumator;
+            this.parent = parent;
         }
 
         public void Start() {
@@ -27,6 +24,8 @@ namespace Visual_Magnitude {
             while (workQueue.TryDequeue(out SpatialUtils.ViewpointProps viewpoint)) {                
                 CalculateVisualMagnitude(viewpoint, losMap);
             }
+            System.Diagnostics.Debug.WriteLine("ThreadDone");
+            parent.ThreadFinished();
         }
 
         private void CalculateVisualMagnitude(SpatialUtils.ViewpointProps viewpoint, GeoMap losMap) {
@@ -45,15 +44,15 @@ namespace Visual_Magnitude {
                 foreach (int[] item in ring) {
                     if (spatialUtils.IsCellVisible(losMap, item[0], item[1])) {
                         visualMagnitude = spatialUtils.GetVisualMagnutude(item[0], item[1]);
-                        sumator.AddResult(new Sumator.VisualMagnitudeResult(item[0], item[1], visualMagnitude));
+                        if (visualMagnitude > 0)
+                            sumator.AddResult(new Sumator.VisualMagnitudeResult(item[0], item[1], visualMagnitude));
+
                         //System.Diagnostics.Debug.WriteLine("{0}", visualMagnitude);
                     }
                     //System.Diagnostics.Debug.WriteLine("[{0},{1}] = done", viewpoint.Y, viewpoint.X);
 
                 }
-            }
-
-            System.Diagnostics.Debug.WriteLine("ThreadDone");
+            }            
         }
 
         private int GetMaximumDistance(SpatialUtils.ViewpointProps viewpoint) {

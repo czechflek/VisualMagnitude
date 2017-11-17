@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using ArcGIS.Core.Data;
+using ArcGIS.Core.Data.Raster;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -10,6 +12,7 @@ namespace Visual_Magnitude {
         private int startingQueueSize;
         private Thread[] threads;
         private int runningThreads;
+        static AutoResetEvent autoEvent = new AutoResetEvent(false);        
 
         public WorkManager(int threadCount) {
             this.threadCount = threadCount;
@@ -28,7 +31,7 @@ namespace Visual_Magnitude {
             startingQueueSize = workQueue.Count;
             runningThreads = threadCount;
             for (int i = 0; i < threadCount; i++) {
-                VisualMagnitudeWorker worker = new VisualMagnitudeWorker(ref workQueue, ref elevationMap, ref sumator);
+                VisualMagnitudeWorker worker = new VisualMagnitudeWorker(ref workQueue, ref elevationMap, ref sumator, this);
                 Thread thread = new Thread(worker.Start);
                 threads[i] = thread;
                 thread.Start();
@@ -38,9 +41,16 @@ namespace Visual_Magnitude {
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void ThreadFinished() {
             runningThreads--;
-            if(runningThreads <= 0) {
+            System.Diagnostics.Debug.WriteLine("Running Threads: " + runningThreads);
+            if (runningThreads <= 0) {
                 sumator.Stop();
             }
         }
+
+        public GeoMap GetResult() {
+            return sumator.VisualMagnitudeMap;
+        }
+
+        public static AutoResetEvent AutoEvent { get => autoEvent; set => autoEvent = value; }
     }
 }

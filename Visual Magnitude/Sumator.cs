@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ArcGIS.Core.Data.Raster;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,11 +9,12 @@ using System.Threading;
 namespace Visual_Magnitude {
     class Sumator {
         private ConcurrentQueue<VisualMagnitudeResult> results = new ConcurrentQueue<VisualMagnitudeResult>();
-        GeoMap visualMagnitudeMap;
-        bool alive = false;
+        private GeoMap visualMagnitudeMap;
+        private bool alive = false;
 
         public Sumator(int dimensionY, int dimensionX) {
-            visualMagnitudeMap = new GeoMap(dimensionY, dimensionX);
+            VisualMagnitudeMap = new GeoMap(dimensionY, dimensionX);
+            VisualMagnitudeMap.Initialize();
         }
 
         public void Start() {
@@ -23,6 +25,7 @@ namespace Visual_Magnitude {
 
         public void Stop() {
             alive = false;
+            System.Diagnostics.Debug.WriteLine("Sumator will stop");
         }
 
         public void AddResult(VisualMagnitudeResult result) {
@@ -30,13 +33,17 @@ namespace Visual_Magnitude {
         }
 
         private void Listen() {
-            while(results.TryDequeue(out VisualMagnitudeResult result) || alive) {
-                visualMagnitudeMap[result.Y, result.X] += result.VisualMagnitude;
+            bool incomingResult;
+            while((incomingResult = results.TryDequeue(out VisualMagnitudeResult result)) || alive) {
+                if(incomingResult)
+                    VisualMagnitudeMap[result.Y, result.X] += result.VisualMagnitude;
             }
-
-            System.Diagnostics.Debug.WriteLine("Sumator ended");
-
+            System.Diagnostics.Debug.WriteLine("Sumator stopped");
+            WorkManager.AutoEvent.Set();
         }
+
+
+        internal GeoMap VisualMagnitudeMap { get => visualMagnitudeMap; set => visualMagnitudeMap = value; }
 
 
         public struct VisualMagnitudeResult {

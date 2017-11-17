@@ -137,7 +137,7 @@ namespace Visual_Magnitude {
         /// <param name="cellX">X coordinate of the cell</param>
         /// <returns>Angle (radians)</returns>
         private double GetViewingAspect(int cellY, int cellX) {
-            return (Math.Atan2((cellY - Viewpoint.Y) * cellResolution, (cellX - Viewpoint.X) * cellResolution) + 2.5 * Math.PI) % (2 * Math.PI);
+            return (Math.Atan2(Viewpoint.Y - cellY, Viewpoint.X - cellX) + 3.5 * Math.PI) % (2 * Math.PI);
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace Visual_Magnitude {
         private double GetCellAspect(int cellY, int cellX) {
             GetCellSlopeComponents(cellY, cellX, out double westeast, out double northsouth);
 
-            return (int) Math.Floor((Math.Atan2(-1 * northsouth, -1 * westeast) + 3.5 * Math.PI)) % (int) (2 * Math.PI); 
+            return (Math.Atan2(-1 * northsouth, -1 * westeast) + 3.5 * Math.PI) % (2 * Math.PI); 
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Visual_Magnitude {
             distY = Math.Abs(Viewpoint.Y - cellY) * cellResolution;
 
             double curvature = (Math.Pow(distX, 2) + Math.Pow(distY, 2)) / earthDiameter;
-            distZ = (float)(cellElevation - curvature + lightRefraction * curvature - Viewpoint.Elevation);
+            distZ = cellElevation - curvature + lightRefraction * curvature - Viewpoint.Elevation;
         }
 
         /// <summary>
@@ -234,7 +234,7 @@ namespace Visual_Magnitude {
         private void GetCellSlopeComponents(int cellY, int cellX, out double westeast, out double northsouth) {
             double cn = Math.Sqrt(2);
 
-            if(cellX <= 0 || cellY <= 0 || cellX-1 >= ElevationMap.GetLength(1)-1 || cellY >= ElevationMap.GetLength(0)-1) {
+            if(cellX <= 0 || cellY <= 0 || cellX >= ElevationMap.GetLength(1)-1 || cellY >= ElevationMap.GetLength(0)-1) {
                 northsouth = westeast = 0;
                 return;
             }
@@ -361,10 +361,10 @@ namespace Visual_Magnitude {
             int xCell2;
 
             public LosCells(int yCell1, int xCell1, int yCell2, int xCell2) : this() {
-                this.yCell1 = yCell1;
-                this.xCell1 = xCell1;
-                this.yCell2 = yCell2;
-                this.xCell2 = xCell2;
+                YCell1 = yCell1;
+                XCell1 = xCell1;
+                YCell2 = yCell2;
+                XCell2 = xCell2;
             }
 
             public int YCell1 { get; set; }
