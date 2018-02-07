@@ -1,0 +1,11 @@
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\bin\Debug\VisualMagnitude.dll
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\bin\Debug\VisualMagnitude.pdb
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\obj\Debug\VisualMagnitude.csprojResolveAssemblyReference.cache
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\obj\Debug\SettingsDockpane.g.cs
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\obj\Debug\VisualMagnitude_MarkupCompile.cache
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\obj\Debug\VisualMagnitude_MarkupCompile.lref
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\obj\Debug\SettingsDockpane.baml
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\obj\Debug\VisualMagnitude.g.resources
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\obj\Debug\VisualMagnitude.csproj.CoreCompileInputs.cache
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\obj\Debug\VisualMagnitude.dll
+D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\obj\Debug\VisualMagnitude.pdb

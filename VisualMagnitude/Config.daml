@@ -1,0 +1,50 @@
+﻿<ArcGIS defaultAssembly="VisualMagnitude.dll" defaultNamespace="VisualMagnitude" xmlns="http://schemas.esri.com/DADF/Registry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.esri.com/DADF/Registry file:///D:/Programs/ArcGis%20Pro/bin/ArcGIS.Desktop.Framework.xsd">
+  <AddInInfo id="{0708fa54-4e67-4460-b914-4172853b3130}" version="1.0" desktopVersion="2.1.10257">
+    <Name>VisualMagnitude</Name>
+    <Description>VisualMagnitude description</Description>
+    <Image>Images\AddinDesktop32.png</Image>
+    <Author>Jakub Cech</Author>
+    <Company>Kansas State University</Company>
+    <Date>2/6/2018 3:06:58 PM, 2018</Date>
+    <Subject>Geoprocessing</Subject>
+    <!-- Note subject can be one or more of these topics:
+                    Content, Framework, Editing, Geodatabase, Geometry, Geoprocessing, Layouts, Map Authoring, Map Exploration -->
+  </AddInInfo>
+  <modules>
+    <insertModule id="VisualMagnitude_Module" className="Module1" autoLoad="false" caption="Module1">
+      <!-- uncomment to have the control hosted on a separate tab-->
+      <tabs>
+        <tab id="VisualMagnitude_Tab1" caption="Visual Magnitude">
+          <group refID="VisualMagnitude_Group1"/>
+        </tab>
+      </tabs>
+      <groups>
+        <group id="VisualMagnitude_Group1" caption="Group 1" appearsOnAddInTab="false">
+          <button refID="VisualMagnitude_SettingsDockpane_ShowButton" size="large" />
+          <button refID="VisualMagnitude_StartAnalysisButton" size="large" />
+        </group>
+      </groups>
+      <controls>
+        <button id="VisualMagnitude_SettingsDockpane_ShowButton" caption="Settings" className="SettingsDockpane_ShowButton" loadOnClick="true" smallImage="Images\GenericButtonPurple16.png" largeImage="Images\GenericButtonPurple32.png">
+          <tooltip heading="Show Dockpane">Show Dockpane<disabledText /></tooltip>
+        </button>
+        <button id="VisualMagnitude_SettingsDockpane_MenuButton" caption="Burger Menu Button" className="SettingsDockpane_MenuButton" loadOnClick="true" smallImage="Images\GenericButtonPurple16.png" largeImage="Images\GenericButtonPurple32.png">
+          <tooltip heading="Burger Menu Button">ToolTip<disabledText /></tooltip>
+        </button>
+        <button id="VisualMagnitude_StartAnalysisButton" caption="Start Analysis" className="StartAnalysisButton" loadOnClick="true" smallImage="Images\GenericButtonBlue16.png" largeImage="Images\GenericButtonBlue32.png">
+          <tooltip heading="Tooltip Heading">Tooltip text<disabledText /></tooltip>
+        </button>
+      </controls>
+      <dockPanes>
+        <dockPane id="VisualMagnitude_SettingsDockpane" caption="SettingsDockpane" className="SettingsDockpaneViewModel" dock="group" dockWith="esri_core_contentsDockPane">
+          <content className="SettingsDockpaneView" />
+        </dockPane>
+      </dockPanes>
+      <menus>
+        <menu id="VisualMagnitude_SettingsDockpane_Menu" caption="Options" contextMenu="true">
+          <button refID="VisualMagnitude_SettingsDockpane_MenuButton" />
+        </menu>
+      </menus>
+    </insertModule>
+  </modules>
+</ArcGIS>
