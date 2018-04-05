@@ -1,6 +1,5 @@
 ﻿using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.Raster;
-using ArcGIS.Desktop.Core.Geoprocessing;
 using ArcGIS.Desktop.Mapping;
 using System;
 using System.Collections;
@@ -11,11 +10,15 @@ using System.Threading.Tasks;
 /// Must be called on MCT
 /// </summary>
 namespace VisualMagnitude {
+    
+    /// <summary>
+    /// Class handling conversion of vector viewpoints to raster coordinates. It stores the converted viewpoints.
+    /// </summary>
     class Projection : IEnumerable {
         Raster inputRaster;
         FeatureType viewpointType;
         String tempFolderPath;
-        double stepLength = 2;
+        double stepLength = SettingsManager.Instance.CurrentSettings.LineInterval;
         HashSet<Tuple<int, int>> viewpoints = new HashSet<Tuple<int, int>>();
 
         private const string tempGdbName = "tempGDB";
@@ -27,12 +30,23 @@ namespace VisualMagnitude {
             LINES
         }
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="inputRaster">Raster map</param>
+        /// <param name="viewpointType">Type of the vector</param>
+        /// <param name="tempFolderPath">Path for temporary files</param>
         public Projection(Raster inputRaster, FeatureType viewpointType, String tempFolderPath) {
             this.inputRaster = inputRaster;
             this.viewpointType = viewpointType;
             this.tempFolderPath = tempFolderPath;
         }
 
+        /// <summary>
+        /// Convert vector viewpoints to raster coordinates.
+        /// </summary>
+        /// <param name="viewpointLayer">Layer which contains the viewpoints.</param>
+        /// <returns>True on success</returns>
         public async Task<bool> CalculateViewpoints(BasicFeatureLayer viewpointLayer) {
             //TODO: check for failures
             if (viewpointType == FeatureType.LINES) {
@@ -51,7 +65,7 @@ namespace VisualMagnitude {
 
                 var xyResult = await Toolbox.AddXY(verticesResult.ReturnValue);
                 System.Diagnostics.Debug.WriteLine(xyResult.ReturnValue);
-                viewpoints = GetLine(fileGDBResult.ReturnValue, tempFeatureClassName, viewpointLayer);
+                viewpoints = GetLine(fileGDBResult.ReturnValue, tempFeatureClassName);
             } else {
                 var xyResult = await Toolbox.AddXY(viewpointLayer);
                 System.Diagnostics.Debug.WriteLine(xyResult.ReturnValue);
@@ -61,14 +75,23 @@ namespace VisualMagnitude {
             return true;
         }
 
-
+        /// <summary>
+        /// Return enumerator.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator GetEnumerator() {
             //TODO: check if the points are inbounds (MapToPixel works for OB points)
             return viewpoints.GetEnumerator();
 
         }
 
-        private HashSet<Tuple<int, int>> GetLine(String gdbPath, String featureClassName, BasicFeatureLayer viewpointLayer) {
+        /// <summary>
+        /// Calculate viewpoints along a vector line, e.g. road, path.
+        /// </summary>
+        /// <param name="gdbPath">Path to GDB</param>
+        /// <param name="featureClassName">Feature class</param>
+        /// <returns>Viewpoints</returns>
+        private HashSet<Tuple<int, int>> GetLine(String gdbPath, String featureClassName) {
             HashSet<Tuple<int, int>> result = new HashSet<Tuple<int, int>>(); //using hash set to prevent duplicates, possible speed up with array
 
             using (Geodatabase geodatabase = new Geodatabase(new FileGeodatabaseConnectionPath(new Uri(gdbPath))))
@@ -115,6 +138,11 @@ namespace VisualMagnitude {
             return result;
         }
 
+        /// <summary>
+        /// Calculate viewpoint coordinates from vector points.
+        /// </summary>
+        /// <param name="viewpointLayer">Layer which contains the viewpoints.</param>
+        /// <returns></returns>
         private HashSet<Tuple<int, int>> GetPoints(BasicFeatureLayer viewpointLayer) {
             HashSet<Tuple<int, int>> result = new HashSet<Tuple<int, int>>(); //using hash set to prevent duplicates, possible speed up with array
             Table table = viewpointLayer.GetTable();

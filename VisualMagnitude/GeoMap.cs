@@ -7,6 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace VisualMagnitude {
+    /// <summary>
+    /// Container for elevation map.
+    /// </summary>
     class GeoMap {
         public double[,] geoMap;
         public const double UndefinedValue = -99D;
@@ -17,10 +20,21 @@ namespace VisualMagnitude {
             set { geoMap[y, x] = value; }
         }
 
+        /// <summary>
+        /// Constructor which initializes the map size.
+        /// </summary>
+        /// <param name="dimensionY">Y length</param>
+        /// <param name="dimensionX">X length</param>
         public GeoMap(int dimensionY, int dimensionX) {
             geoMap = new double[dimensionY, dimensionX];
         }
 
+        /// <summary>
+        /// Create a mock map for testing purposes.
+        /// </summary>
+        /// <param name="dimensionY">Y length</param>
+        /// <param name="dimensionX">X length</param>
+        /// <returns>Mocked GeoMap</returns>
         public static GeoMap CreateMock(int dimensionY, int dimensionX) {
             GeoMap map = new GeoMap(dimensionY, dimensionX);
             Random rnd = new Random();
@@ -32,6 +46,10 @@ namespace VisualMagnitude {
             return map;
         }
 
+        /// <summary>
+        /// Import the elevation data.
+        /// </summary>
+        /// <param name="data">Elevation data</param>
         public void ImportData(Array data) {
             for (int x = 0; x < data.GetLength(0); x++) {
                 for (int y = 0; y < data.GetLength(1); y++) {
@@ -40,10 +58,14 @@ namespace VisualMagnitude {
             }
         }
 
+        /// <summary>
+        /// Initalize the entire map to 0.
+        /// </summary>
         public void Initialize() {
-            Array.Clear(geoMap, 0, geoMap.Length);
+            ClearMap();
         }
 
+        /*
         public Raster WriteDataToRaster(Raster raster) {
             PixelBlock pixelBlock = raster.CreatePixelBlock(raster.GetWidth(), raster.GetHeight());
             //raster.Read(0, 0, pixelBlock);
@@ -55,14 +77,24 @@ namespace VisualMagnitude {
             //raster.Refresh();
             return raster;
 
-        }
+        }*/
 
+        /// <summary>
+        /// Initalize the ommited rings around a viewpont.
+        /// </summary>
+        /// <param name="viewpointY">Y coordinate of a viewpoint</param>
+        /// <param name="viewpointX">X coordinate of a viewpoint</param>
+        /// <param name="omittedDistance">Number of omitted rings</param>
         public void InitializeOmittedRings(int viewpointY, int viewpointX, int omittedDistance) {
             for (int i = 0; i < omittedDistance; i++) {
                 throw new NotImplementedException();
             }
         }
 
+        /// <summary>
+        /// Transpose the map.
+        /// </summary>
+        /// <returns>Transposed map</returns>
         public double[,] Transpose() {
             double[,] transposed = new double[geoMap.GetLength(1), geoMap.GetLength(0)];
             for (int x = 0; x < geoMap.GetLength(1); x++) {
@@ -74,14 +106,29 @@ namespace VisualMagnitude {
 
         }
 
+        /// <summary>
+        /// Clear the map.
+        /// </summary>
         public void ClearMap() {
             Array.Clear(geoMap, 0, geoMap.Length);
         }
 
+        /// <summary>
+        /// Return length of the selected dimension of the map
+        /// </summary>
+        /// <param name="dimension">Dimension</param>
+        /// <returns>Length of the dimension</returns>
         public int GetLength(int dimension) {
             return geoMap.GetLength(dimension);
         }
 
+        /// <summary>
+        /// Calculate the ring in the specified distance around a viewpoint 
+        /// </summary>
+        /// <param name="viewpointY">Y coordinate of a viewpoint</param>
+        /// <param name="viewpointX">X coordinate of a viewpoint</param>
+        /// <param name="distance"></param>
+        /// <returns>Ring around viewpoint</returns>
         public Ring GetRing(int viewpointY, int viewpointX, int distance) {
             bool[] inbounds = new bool[4] { true, true, true, true };
 
@@ -131,6 +178,9 @@ namespace VisualMagnitude {
 
         public double CellSize { get => cellSize; set => cellSize = value; }
 
+        /// <summary>
+        /// Container for ring properties.
+        /// </summary>
         public class Ring : IEnumerable {
             int[] topleft;
             int[] topright;
@@ -138,6 +188,14 @@ namespace VisualMagnitude {
             int[] bottomleft;
             bool[] inbounds;
 
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="topleft">Top-left corner of the ring</param>
+            /// <param name="topright">Top-right corner of the ring</param>
+            /// <param name="bottomright">Bottom-right corner of the ring</param>
+            /// <param name="bottomleft">Bottom-left corner of the ring</param>
+            /// <param name="inbounds">Inbound state of corners</param>
             public Ring(int[] topleft, int[] topright, int[] bottomright, int[] bottomleft, bool[] inbounds) {
                 this.topleft = topleft;
                 this.topright = topright;
@@ -146,6 +204,10 @@ namespace VisualMagnitude {
                 this.inbounds = inbounds;
             }
 
+            /// <summary>
+            /// Enumerator which yealds cells in the ring.
+            /// </summary>
+            /// <returns>Ring enumerator</returns>
             public IEnumerator GetEnumerator() {
                 //top row
                 if (inbounds[0]) {

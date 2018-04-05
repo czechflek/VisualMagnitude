@@ -65,6 +65,9 @@ namespace VisualMagnitude {
         /// <param name="cellX">X coordinate of the cell</param>
         /// <returns></returns>
         public bool IsCellVisible(GeoMap losMap, int cellY, int cellX) {
+            if(cellY == 83 && cellX == 44) {
+                System.Diagnostics.Debug.WriteLine("here");
+            }
             Orientation cellOrientation = GetCellOrientation(cellY, cellX);
             GetNeighborCells(cellY, cellX, cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX);
 
@@ -88,13 +91,17 @@ namespace VisualMagnitude {
         /// <param name="cellY">Y coordinate of the cell</param>
         /// <param name="cellX">X coordinate of the cell</param>
         /// <returns>visual magnitude value</returns>
-        public double GetVisualMagnutude(int cellY, int cellX) {
+        public double GetVisualMagnutude(int cellY, int cellX) { //TODO: typo!
             double distance = GetDistance(cellY, cellX);
             
             double viewingSlope = GetViewingSlope(cellY, cellX);            
             double viewingAspect = GetViewingAspect(cellY, cellX);
             Vector3 viewVector = MakeNormalizedVector(viewingAspect, viewingSlope);
+            if (cellY == 83 && cellX == 44) {
+                System.Diagnostics.Debug.WriteLine((-Math.Atan2(Viewpoint.X - cellX, Viewpoint.Y - cellY) + 2 * Math.PI));
 
+
+            }
             double cellSlope = GetCellSlope(cellY, cellX);
             double cellAspect = GetCellAspect(cellY, cellX);
             Vector3 cellNormal = MakeNormalizedVector(cellAspect, cellSlope);
@@ -104,7 +111,7 @@ namespace VisualMagnitude {
             if(vectorAngle < Math.PI / 2) {
                 return 0D;
             }
-
+            
             return (Math.Pow(cellResolution, 2) / Math.Pow(distance, 2)) * Math.Abs(Math.Cos(vectorAngle));
         }
 
@@ -118,7 +125,7 @@ namespace VisualMagnitude {
         private double InterpolateWeight(int cellY, int cellX, Orientation cellOrientation) {
             GetNeighborCells(cellY, cellX, cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX);
 
-            double cellAspect = GetViewingAspect(Viewpoint.Y, Viewpoint.X);
+            double cellAspect = GetViewingAspect(cellY, cellX); //snad opraveno
             double adjacentAspect = GetViewingAspect(adjacentY, adjacentX);
             double offsetAspect = GetViewingAspect(offsetY, offsetX);
 
@@ -137,7 +144,7 @@ namespace VisualMagnitude {
         /// <param name="cellX">X coordinate of the cell</param>
         /// <returns>Angle (radians)</returns>
         private double GetViewingAspect(int cellY, int cellX) {
-            return (Math.Atan2(Viewpoint.Y - cellY, Viewpoint.X - cellX) + 3.5 * Math.PI) % (2 * Math.PI);
+            return (-Math.Atan2(Viewpoint.X - cellX, Viewpoint.Y - cellY) + 2 * Math.PI) % (2 * Math.PI); //prohozeno
         }
 
         /// <summary>
@@ -151,7 +158,8 @@ namespace VisualMagnitude {
             GetYXZDistances(cellY, cellX, ElevationMap[cellY, cellX], out double distY, out double distX, out double distZ);
             double directDistance = Math.Sqrt(Math.Pow(distY, 2) + Math.Pow(distX, 2));
 
-            return Math.Atan2(distZ, directDistance);
+            return Math.Tan(distZ / directDistance);
+            //return Math.Atan2(distZ, directDistance);
         }
 
         /// <summary>
@@ -175,7 +183,7 @@ namespace VisualMagnitude {
         private double GetCellAspect(int cellY, int cellX) {
             GetCellSlopeComponents(cellY, cellX, out double westeast, out double northsouth);
 
-            return (Math.Atan2(-1 * northsouth, -1 * westeast) + 3.5 * Math.PI) % (2 * Math.PI); 
+            return (Math.Atan2(westeast, northsouth) + 2 * Math.PI) % (2 * Math.PI); //prohozeno
         }
 
         /// <summary>
@@ -237,15 +245,15 @@ namespace VisualMagnitude {
             if(cellX <= 0 || cellY <= 0 || cellX >= ElevationMap.GetLength(1)-1 || cellY >= ElevationMap.GetLength(0)-1) {
                 northsouth = westeast = 0;
                 return;
-            }
+            } 
 
             try {
-                westeast = ((cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY, cellX - 1] + cn * ElevationMap[cellY + 1, cellX - 1])
-                           - (cn * ElevationMap[cellY - 1, cellX + 1] + ElevationMap[cellY, cellX + 1] + cn * ElevationMap[cellY + 1, cellX + 1]))
+                westeast = ((cn * ElevationMap[cellY - 1, cellX + 1] + ElevationMap[cellY, cellX + 1] + cn * ElevationMap[cellY + 1, cellX + 1])
+                         - (cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY, cellX - 1] + cn * ElevationMap[cellY + 1, cellX - 1]))
                            / (8 * cellResolution);
 
-                northsouth = ((cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY - 1, cellX] + cn * ElevationMap[cellY - 1, cellX + 1])
-                           - (cn * ElevationMap[cellY + 1, cellX - 1] + ElevationMap[cellY + 1, cellX] + cn * ElevationMap[cellY + 1, cellX + 1]))
+                northsouth = ((cn * ElevationMap[cellY + 1, cellX - 1] + ElevationMap[cellY + 1, cellX] + cn * ElevationMap[cellY + 1, cellX + 1])
+                           - (cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY - 1, cellX] + cn * ElevationMap[cellY - 1, cellX + 1]))
                            / (8 * cellResolution);
             } catch (IndexOutOfRangeException) {
                 System.Diagnostics.Debug.WriteLine("{0}, {1}", cellX, cellY);

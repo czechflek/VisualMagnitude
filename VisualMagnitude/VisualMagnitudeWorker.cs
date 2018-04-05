@@ -3,9 +3,9 @@
 namespace VisualMagnitude {
     class VisualMagnitudeWorker {
         private SpatialUtils spatialUtils;
-        private int omittedRings = 0;
+        private int omittedRings = SettingsManager.Instance.CurrentSettings.OmittedRings;
         private GeoMap elevationMap;
-        private double elevationOffset = 10D;
+        private double elevationOffset = SettingsManager.Instance.CurrentSettings.AltOffset;
         private ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue;
         private Sumator sumator;
         private WorkManager parent;
@@ -21,7 +21,8 @@ namespace VisualMagnitude {
         public void Start() {
             GeoMap losMap = new GeoMap(elevationMap.GetLength(0), elevationMap.GetLength(1));
 
-            while (workQueue.TryDequeue(out SpatialUtils.ViewpointProps viewpoint)) {                
+            while (workQueue.TryDequeue(out SpatialUtils.ViewpointProps viewpoint)) {
+                System.Diagnostics.Debug.WriteLine(workQueue.Count + " left");
                 CalculateVisualMagnitude(viewpoint, losMap);
             }
             System.Diagnostics.Debug.WriteLine("ThreadDone");
@@ -39,7 +40,7 @@ namespace VisualMagnitude {
             //find out the maximum distance to the edge of map
             int maxDistance = GetMaximumDistance(viewpoint);
 
-            for (int i = 1; i < maxDistance; i++) {
+            for (int i = 1 + omittedRings; i < maxDistance; i++) {
                 GeoMap.Ring ring = elevationMap.GetRing(viewpoint.Y, viewpoint.X, i);
                 foreach (int[] item in ring) {
                     if (spatialUtils.IsCellVisible(losMap, item[0], item[1])) {

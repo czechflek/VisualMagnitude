@@ -36,14 +36,13 @@ namespace VisualMagnitude {
             await QueuedTask.Run(async () => {
 
                 string outputFolderName = "VisualMagnitudeOutput";
-                string rasterName = "name3.tiff";
+                string tmpRasterName = "tmp.tiff";
                 string rasterFormat = "TIFF";
                 string tempFolder = Path.Combine(Project.Current.HomeFolderPath, outputFolderName);
                 Directory.CreateDirectory(tempFolder);
 
                 Raster raster = currentRasterLayer.GetRaster();
-                //Tuple<int, int> test = raster.MapToPixel(2, 10);
-                Projection projection = new Projection(raster, Projection.FeatureType.POINTS, tempFolder);
+                Projection projection = new Projection(raster, Projection.FeatureType.POINTS, tempFolder); //make the detection automatic
                 await projection.CalculateViewpoints(currentFeatureLayer);
 
 
@@ -58,7 +57,7 @@ namespace VisualMagnitude {
                     System.Diagnostics.Debug.WriteLine("Cells do not have equal size");
                 }
                 elevationMap.CellSize = cellSize.Item1;
-                WorkManager workManager = new WorkManager(4);
+                WorkManager workManager = new WorkManager(SettingsManager.Instance.CurrentSettings.WorkerThreads);
                 elevationMap.ImportData(pixels);
                 foreach (Tuple<int, int> point in projection) {
                     workManager.AddWork(new SpatialUtils.ViewpointProps(point.Item2, point.Item1));
@@ -81,7 +80,7 @@ namespace VisualMagnitude {
                 //create a copy of the opened raster 
                 raster.SetNoDataValue(0);
                 raster.SetPixelType(RasterPixelType.DOUBLE);
-                RasterDataset resultRasterDataset = raster.SaveAs(rasterName, outputDataStore, rasterFormat);
+                RasterDataset resultRasterDataset = raster.SaveAs(tmpRasterName, outputDataStore, rasterFormat);
                 Raster resultRaster = resultRasterDataset.CreateRaster(new int[1] { 0 });
 
                 resultRaster.Refresh();
@@ -98,10 +97,13 @@ namespace VisualMagnitude {
                 pixelBlock.SetPixelData(0, result.Transpose());
 
                 resultRaster.Write(0, 0, pixelBlock);
-                resultRaster.Refresh(); LayerFactory.Instance.CreateLayer(new Uri(Path.Combine(outputFolder, rasterName)),
-                                      MapView.Active.Map);
-                resultRaster.SaveAs("finishedRaster3.tiff", outputDataStore, rasterFormat);
-                LayerFactory.Instance.CreateLayer(new Uri(Path.Combine(outputFolder, "finishedRaster2.tiff")),
+                resultRaster.Refresh();
+                resultRaster.SaveAs(SettingsManager.Instance.CurrentSettings.OutputFilename, outputDataStore, rasterFormat);
+
+                
+                //var xyResult = await Toolbox.Delete(tmpRasterName);
+                //System.Diagnostics.Debug.WriteLine(xyResult.ReturnValue);
+                LayerFactory.Instance.CreateLayer(new Uri(Path.Combine(outputFolder, SettingsManager.Instance.CurrentSettings.OutputFilename)),
                                       MapView.Active.Map);
             });
         }

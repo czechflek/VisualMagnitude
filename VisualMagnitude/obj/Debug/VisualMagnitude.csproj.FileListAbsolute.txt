@@ -12,7 +12,6 @@ D:\Data\VisualMagnitude\VisualMagnitude\VisualMagnitude\obj\Debug\VisualMagnitud
 D:\Data\GIT\VisualMagnitude\obj\Debug\VisualMagnitude.csprojResolveAssemblyReference.cache
 D:\Data\GIT\VisualMagnitude\obj\Debug\SettingsDockpane.g.cs
 D:\Data\GIT\VisualMagnitude\obj\Debug\VisualMagnitude_MarkupCompile.cache
-D:\Data\GIT\VisualMagnitude\obj\Debug\VisualMagnitude_MarkupCompile.lref
 D:\Data\GIT\VisualMagnitude\obj\Debug\VisualMagnitude.dll
 D:\Data\GIT\VisualMagnitude\obj\Debug\VisualMagnitude.pdb
 D:\Data\GIT\VisualMagnitude\bin\Debug\VisualMagnitude.dll
