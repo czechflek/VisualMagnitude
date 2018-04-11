@@ -13,6 +13,7 @@ namespace VisualMagnitude {
         private const double radInDeg = 57.2957795;
         private const int earthDiameter = 12740000;
         private const float lightRefraction = 0.13F;
+        private Vector3 verticalVector = new Vector3(0, 0, 1);
 
         private double cellResolution;
         private ViewpointProps viewpoint;
@@ -65,8 +66,8 @@ namespace VisualMagnitude {
         /// <param name="cellX">X coordinate of the cell</param>
         /// <returns></returns>
         public bool IsCellVisible(GeoMap losMap, int cellY, int cellX) {
-            if(cellY == 83 && cellX == 44) {
-                System.Diagnostics.Debug.WriteLine("here");
+            if(cellY == 44 && cellX == 47) {
+                System.Diagnostics.Debug.WriteLine((-Math.Atan2(Viewpoint.X - cellX, Viewpoint.Y - cellY) + 2 * Math.PI));
             }
             Orientation cellOrientation = GetCellOrientation(cellY, cellX);
             GetNeighborCells(cellY, cellX, cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX);
@@ -76,7 +77,7 @@ namespace VisualMagnitude {
             double viewingLos = GetViewingSlope(cellY, cellX);
             double cellLos = losMap[adjacentY, adjacentX] * adjacentWeight + losMap[offsetY, offsetX] * (1 - adjacentWeight);
 
-            if (viewingLos < cellLos) {
+            if (viewingLos > cellLos) {
                 losMap[cellY, cellX] = cellLos;
                 return false;
             } else {
@@ -93,25 +94,21 @@ namespace VisualMagnitude {
         /// <returns>visual magnitude value</returns>
         public double GetVisualMagnutude(int cellY, int cellX) { //TODO: typo!
             double distance = GetDistance(cellY, cellX);
-            
-            double viewingSlope = GetViewingSlope(cellY, cellX);            
+
+            double viewingSlope = GetViewingSlope(cellY, cellX);
             double viewingAspect = GetViewingAspect(cellY, cellX);
             Vector3 viewVector = MakeNormalizedVector(viewingAspect, viewingSlope);
-            if (cellY == 83 && cellX == 44) {
-                System.Diagnostics.Debug.WriteLine((-Math.Atan2(Viewpoint.X - cellX, Viewpoint.Y - cellY) + 2 * Math.PI));
 
-
-            }
             double cellSlope = GetCellSlope(cellY, cellX);
             double cellAspect = GetCellAspect(cellY, cellX);
             Vector3 cellNormal = MakeNormalizedVector(cellAspect, cellSlope);
 
             double vectorAngle = GetVectorAngle(viewVector, cellNormal);
 
-            if(vectorAngle < Math.PI / 2) {
+            if (vectorAngle < Math.PI / 2) {
                 return 0D;
             }
-            
+
             return (Math.Pow(cellResolution, 2) / Math.Pow(distance, 2)) * Math.Abs(Math.Cos(vectorAngle));
         }
 
@@ -125,7 +122,7 @@ namespace VisualMagnitude {
         private double InterpolateWeight(int cellY, int cellX, Orientation cellOrientation) {
             GetNeighborCells(cellY, cellX, cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX);
 
-            double cellAspect = GetViewingAspect(cellY, cellX); //snad opraveno
+            double cellAspect = GetViewingAspect(cellY, cellX);
             double adjacentAspect = GetViewingAspect(adjacentY, adjacentX);
             double offsetAspect = GetViewingAspect(offsetY, offsetX);
 
@@ -149,17 +146,16 @@ namespace VisualMagnitude {
 
         /// <summary>
         /// Calculate the angle from origin to the specified point. The angle is compensated for Earth's curvature and light 
-        /// diffraction.
+        /// diffraction. The values range from 0 to Pi, where 0 is looking directly up, and Pi is looking directly down from the viewpoint.
         /// </summary>
         /// <param name="cellY">Y coordinate of the cell</param>
         /// <param name="cellX">X coordinate of the cell</param>
-        /// <returns>Vertical angle from origin to the specified point in radians relative to horizon.</returns>
+        /// <returns>Vertical angle from origin to the specified point in radians relative to zenith.</returns>
         private double GetViewingSlope(int cellY, int cellX) {
             GetYXZDistances(cellY, cellX, ElevationMap[cellY, cellX], out double distY, out double distX, out double distZ);
             double directDistance = Math.Sqrt(Math.Pow(distY, 2) + Math.Pow(distX, 2));
 
-            return Math.Tan(distZ / directDistance);
-            //return Math.Atan2(distZ, directDistance);
+            return Math.Atan2(directDistance, distZ);
         }
 
         /// <summary>
@@ -168,11 +164,11 @@ namespace VisualMagnitude {
         /// <param name="cellY">Y coordinate of the cell</param>
         /// <param name="cellX">X coordinate of the cell</param>
         /// <returns>cell slope in radians</returns>
-        private double GetCellSlope(int cellY, int cellX) {
+        /*private double GetCellSlope(int cellY, int cellX) {
             GetCellSlopeComponents(cellY, cellX, out double westeast, out double northsouth);
 
             return Math.Sqrt(Math.Pow(westeast, 2) + Math.Pow(northsouth, 2)) + (Math.PI / 2);
-        }
+        }*/
 
         /// <summary>
         /// Calculate cell aspect. 0 = North, Pi/2 = East, Pi = South, 3Pi/2 = West
@@ -183,7 +179,7 @@ namespace VisualMagnitude {
         private double GetCellAspect(int cellY, int cellX) {
             GetCellSlopeComponents(cellY, cellX, out double westeast, out double northsouth);
 
-            return (Math.Atan2(westeast, northsouth) + 2 * Math.PI) % (2 * Math.PI); //prohozeno
+            return (Math.Atan2(westeast, -1*northsouth) + 2 * Math.PI) % (2 * Math.PI);
         }
 
         /// <summary>
@@ -238,27 +234,53 @@ namespace VisualMagnitude {
         /// <param name="cellY">Y coordinate of the cell</param>
         /// <param name="cellX">X coordinate of the cell</param>
         /// <param name="westeast">output West-East component</param>
-        /// <param name="northsouth">output North-South component</param>
-        private void GetCellSlopeComponents(int cellY, int cellX, out double westeast, out double northsouth) {
+        /// <param name="southnorth">output North-South component</param>
+        private void GetCellSlopeComponents(int cellY, int cellX, out double eastwest, out double northsouth) {
             double cn = Math.Sqrt(2);
 
-            if(cellX <= 0 || cellY <= 0 || cellX >= ElevationMap.GetLength(1)-1 || cellY >= ElevationMap.GetLength(0)-1) {
-                northsouth = westeast = 0;
+            if (cellX <= 0 || cellY <= 0 || cellX >= ElevationMap.GetLength(1) - 1 || cellY >= ElevationMap.GetLength(0) - 1) {
+                northsouth = eastwest = 0;
                 return;
-            } 
+            }
 
             try {
-                westeast = ((cn * ElevationMap[cellY - 1, cellX + 1] + ElevationMap[cellY, cellX + 1] + cn * ElevationMap[cellY + 1, cellX + 1])
-                         - (cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY, cellX - 1] + cn * ElevationMap[cellY + 1, cellX - 1]))
-                           / (8 * cellResolution);
+                northsouth = (cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY - 1, cellX] + cn * ElevationMap[cellY - 1, cellX + 1]) / 4
+                           - (cn * ElevationMap[cellY + 1, cellX - 1] + ElevationMap[cellY + 1, cellX] + cn * ElevationMap[cellY + 1, cellX + 1]) / 4;
 
-                northsouth = ((cn * ElevationMap[cellY + 1, cellX - 1] + ElevationMap[cellY + 1, cellX] + cn * ElevationMap[cellY + 1, cellX + 1])
-                           - (cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY - 1, cellX] + cn * ElevationMap[cellY - 1, cellX + 1]))
-                           / (8 * cellResolution);
+                eastwest = (cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY, cellX - 1] + cn * ElevationMap[cellY + 1, cellX - 1]) / 4
+                         - (cn * ElevationMap[cellY - 1, cellX + 1] + ElevationMap[cellY, cellX + 1] + cn * ElevationMap[cellY + 1, cellX + 1]) / 4;
             } catch (IndexOutOfRangeException) {
                 System.Diagnostics.Debug.WriteLine("{0}, {1}", cellX, cellY);
-                northsouth = westeast = 0;
+                northsouth = eastwest = 0;
             }
+        }
+
+        private double GetCellSlope(int cellY, int cellX) {
+            double cn = Math.Sqrt(2);
+            double northsouth;
+            double eastwest;
+
+            if (cellX <= 0 || cellY <= 0 || cellX >= ElevationMap.GetLength(1) - 1 || cellY >= ElevationMap.GetLength(0) - 1) {
+                return 0;
+            }
+
+            try {
+                northsouth = (cn* ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY - 1, cellX] + cn*ElevationMap[cellY - 1, cellX + 1]) / 4
+                           - (cn*ElevationMap[cellY + 1, cellX - 1] + ElevationMap[cellY + 1, cellX] + cn*ElevationMap[cellY + 1, cellX + 1]) / 4;
+
+                eastwest = (cn*ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY, cellX - 1] + cn*ElevationMap[cellY + 1, cellX - 1]) / 4
+                         - (cn*ElevationMap[cellY - 1, cellX + 1] + ElevationMap[cellY, cellX + 1] + cn*ElevationMap[cellY + 1, cellX + 1]) / 4;
+            } catch (IndexOutOfRangeException) {
+                System.Diagnostics.Debug.WriteLine("{0}, {1}", cellX, cellY);
+                return 0;
+            }
+
+            Vector3 northVector = Vector3.Normalize(new Vector3(0, 2 * (float)cellResolution, (float)northsouth));
+            Vector3 eastVector = Vector3.Normalize(new Vector3(2 * (float)cellResolution, 0, (float)eastwest));
+
+            Vector3 slopeVector = Vector3.Cross(eastVector, northVector);
+
+            return GetVectorAngle(slopeVector, verticalVector);
         }
 
         private Orientation GetCellOrientation(int cellY, int cellX) {
@@ -341,9 +363,9 @@ namespace VisualMagnitude {
         /// <param name="slope">slope (vertical angle, radians)</param>
         /// <returns>normalized 3D vector</returns>
         private static Vector3 MakeNormalizedVector(double azimuth, double slope) {
-            float x = (float)(Math.Sin(azimuth) * Math.Cos(slope));
-            float y = (float)(Math.Cos(azimuth) * Math.Cos(slope));
-            float z = (float)(Math.Sin(slope));
+            float x = (float)(Math.Cos(azimuth) * Math.Sin(slope));
+            float y = (float)(Math.Sin(azimuth) * Math.Sin(slope));
+            float z = (float)(Math.Cos(slope));
 
             return Vector3.Normalize(new Vector3(x, y, z));
         }

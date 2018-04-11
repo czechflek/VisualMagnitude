@@ -115,6 +115,7 @@
     <AddInContent Include="DarkImages\AddInDesktop32.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GarbageHelper.cs" />
     <Compile Include="GeoMap.cs" />
     <Compile Include="Module1.cs" />
     <Compile Include="Projection.cs" />

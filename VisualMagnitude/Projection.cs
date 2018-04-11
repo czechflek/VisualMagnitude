@@ -4,6 +4,7 @@ using ArcGIS.Desktop.Mapping;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 /// <summary>
@@ -53,6 +54,8 @@ namespace VisualMagnitude {
                 // Sequence of tools which converts vertices of polylines to points
                 var fileGDBResult = await Toolbox.CreateFileGDB(tempFolderPath, tempGdbName);
                 System.Diagnostics.Debug.WriteLine(fileGDBResult.ReturnValue);
+                System.Diagnostics.Debug.WriteLine(Path.Combine(tempFolderPath, tempGdbName + ".gdb"));
+                GarbageHelper.Instance.AddGarbage(Path.Combine(tempFolderPath, tempGdbName + ".gdb"));
 
                 var featureDatasetResult = await Toolbox.CreateFeatureDataset(fileGDBResult.ReturnValue, tempFeatureDatasetName);
                 System.Diagnostics.Debug.WriteLine(featureDatasetResult.ReturnValue);

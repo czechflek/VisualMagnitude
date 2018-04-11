@@ -12,7 +12,7 @@ namespace VisualMagnitude {
     /// </summary>
     class GeoMap {
         public double[,] geoMap;
-        public const double UndefinedValue = -99D;
+        public const double UndefinedValue = 100D;
         private double cellSize = 1;
 
         public double this[int y, int x] {

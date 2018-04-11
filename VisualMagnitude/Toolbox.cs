@@ -72,6 +72,11 @@ namespace VisualMagnitude {
             return await ExecuteTool("CreateFeatureclass", outputFeatureDataset, name);
         }
 
+        /// <summary>
+        /// Delete function. Deletes a file from the catalog and filesystem.
+        /// </summary>
+        /// <param name="file">file to be deleted</param>
+        /// <returns>Result</returns>
         public static async Task<IGPResult> Delete(String file) {
             return await ExecuteTool("Delete", file);
         }

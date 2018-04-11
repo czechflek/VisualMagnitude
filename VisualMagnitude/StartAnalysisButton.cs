@@ -81,6 +81,7 @@ namespace VisualMagnitude {
                 raster.SetNoDataValue(0);
                 raster.SetPixelType(RasterPixelType.DOUBLE);
                 RasterDataset resultRasterDataset = raster.SaveAs(tmpRasterName, outputDataStore, rasterFormat);
+                GarbageHelper.Instance.AddGarbage(Path.Combine(outputFolder, tmpRasterName));
                 Raster resultRaster = resultRasterDataset.CreateRaster(new int[1] { 0 });
 
                 resultRaster.Refresh();
@@ -100,9 +101,9 @@ namespace VisualMagnitude {
                 resultRaster.Refresh();
                 resultRaster.SaveAs(SettingsManager.Instance.CurrentSettings.OutputFilename, outputDataStore, rasterFormat);
 
-                
-                //var xyResult = await Toolbox.Delete(tmpRasterName);
-                //System.Diagnostics.Debug.WriteLine(xyResult.ReturnValue);
+
+                GarbageHelper.Instance.CleanUp();
+
                 LayerFactory.Instance.CreateLayer(new Uri(Path.Combine(outputFolder, SettingsManager.Instance.CurrentSettings.OutputFilename)),
                                       MapView.Active.Map);
             });

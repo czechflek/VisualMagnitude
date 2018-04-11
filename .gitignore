@@ -4,3 +4,5 @@
 
 /.vs/VisualMagnitude/v15/Server/sqlite3
 /.vs/VisualMagnitude/v15
+/VisualMagnitude/bin
+/VisualMagnitude/obj
