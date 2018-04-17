@@ -1,8 +1,8 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
 /.vs/VisualMagnitude/v15/Server/sqlite3
 /.vs/VisualMagnitude/v15
-/VisualMagnitude/bin
-/VisualMagnitude/obj
+/VisualMagnitude/bin/*
+/VisualMagnitude/obj/*
