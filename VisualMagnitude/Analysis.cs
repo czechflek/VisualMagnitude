@@ -27,6 +27,16 @@ namespace VisualMagnitude {
             if (!ValidateInputLayers()) {
                 return;
             }
+            outputFolder = CreateOutputDirectory(outputFolderName);
+            if (File.Exists(outputFolder + "/" + SettingsManager.Instance.CurrentSettings.OutputFilename)) {
+                System.Windows.MessageBoxResult messageResult = MessageBox.Show("The output file already exists and will be overwritten. Continue?", "File exists!", System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Warning);
+                if(messageResult == System.Windows.MessageBoxResult.OK) {
+                    GarbageHelper.Instance.AddGarbage(outputFolder + "/" + SettingsManager.Instance.CurrentSettings.OutputFilename);
+                    GarbageHelper.Instance.CleanUp();
+                } else {
+                    return;
+                }
+            }
 
             await QueuedTask.Run(async () => {
                 outputFolder = CreateOutputDirectory(outputFolderName);

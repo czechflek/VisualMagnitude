@@ -54,7 +54,7 @@ namespace VisualMagnitude {
             };
 
             SettingsManager.Instance.SaveSettings(settings);
-            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Settings were saved successfuly.", "Success!");
+            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Settings were saved successfuly.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
 
         public string AltOffset { get; set; }

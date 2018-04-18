@@ -43,7 +43,9 @@ namespace VisualMagnitude {
                 foreach (string file in garbage) {
                     await Toolbox.Delete(file);
                 }
+                garbage.Clear();
             });
+            
         }
     }
 }
