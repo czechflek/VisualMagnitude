@@ -1,6 +1,4 @@
-﻿using ArcGIS.Core.Data;
-using ArcGIS.Core.Data.Raster;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 

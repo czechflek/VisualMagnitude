@@ -115,9 +115,12 @@
     <AddInContent Include="DarkImages\AddInDesktop32.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analysis.cs" />
+    <Compile Include="LayerComboBox.cs" />
+    <Compile Include="DemComboBox.cs" />
     <Compile Include="GarbageHelper.cs" />
     <Compile Include="GeoMap.cs" />
-    <Compile Include="Module1.cs" />
+    <Compile Include="VisualMagnitude.cs" />
     <Compile Include="Projection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsDockpane.xaml.cs">
@@ -129,6 +132,7 @@
     <Compile Include="StartAnalysisButton.cs" />
     <Compile Include="Sumator.cs" />
     <Compile Include="Toolbox.cs" />
+    <Compile Include="ViewpointsComboBox.cs" />
     <Compile Include="VisualMagnitudeWorker.cs" />
     <Compile Include="WorkManager.cs" />
   </ItemGroup>

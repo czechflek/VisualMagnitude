@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ArcGIS.Desktop.Mapping;
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -14,6 +11,9 @@ namespace VisualMagnitude {
     /// </summary>
     class SettingsManager {
         private static SettingsManager instance;
+
+        public RasterLayer SelectedDemLayer { get; set; }
+        public FeatureLayer SelectedViewpointLayer { get; set; }
 
         /// <summary>
         /// Private constructor. Initial settings are loaded.
@@ -47,7 +47,7 @@ namespace VisualMagnitude {
                 settings.OmittedRings = int.Parse(xmlSettings.Element("OmittedRings").Value);
                 settings.WorkerThreads = int.Parse(xmlSettings.Element("WorkerThreads").Value);
                 settings.OutputFilename = xmlSettings.Element("OutputFilename").Value;
-            } catch (FileNotFoundException) {
+            } catch (Exception) {
                 CreateDefaultSettings();
             }
             CurrentSettings = settings;

@@ -1,12 +1,9 @@
 ﻿using ArcGIS.Desktop.Framework.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace VisualMagnitude {
-    
+
     /// <summary>
     /// Helper class which collects files to be deleted.
     /// </summary>
@@ -46,7 +43,9 @@ namespace VisualMagnitude {
                 foreach (string file in garbage) {
                     await Toolbox.Delete(file);
                 }
+                garbage.Clear();
             });
+            
         }
     }
 }

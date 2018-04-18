@@ -11,28 +11,49 @@
                     Content, Framework, Editing, Geodatabase, Geometry, Geoprocessing, Layouts, Map Authoring, Map Exploration -->
   </AddInInfo>
   <modules>
-    <insertModule id="VisualMagnitude_Module" className="Module1" autoLoad="false" caption="Module1">
+    <insertModule id="VisualMagnitude_Module" className="VisualMagnitude" autoLoad="false" caption="Visual Magnitude">
       <!-- uncomment to have the control hosted on a separate tab-->
       <tabs>
         <tab id="VisualMagnitude_Tab1" caption="Visual Magnitude">
-          <group refID="VisualMagnitude_Group1"/>
+          <group refID="VisualMagnitude_Settings" />
+          <group refID="VisualMagnitude_Analysis" />
         </tab>
       </tabs>
       <groups>
-        <group id="VisualMagnitude_Group1" caption="Group 1" appearsOnAddInTab="false">
+        <group id="VisualMagnitude_Settings" caption="Settings" appearsOnAddInTab="false">
           <button refID="VisualMagnitude_SettingsDockpane_ShowButton" size="large" />
+        </group>
+        <group id="VisualMagnitude_Analysis" caption="Analysis" appearsOnAddInTab="false">
+          <comboBox refID="VisualMagnitude_DemComboBox" />
+          <comboBox refID="VisualMagnitude_ViewpointsComboBox" />
           <button refID="VisualMagnitude_StartAnalysisButton" size="large" />
         </group>
       </groups>
       <controls>
         <button id="VisualMagnitude_SettingsDockpane_ShowButton" caption="Settings" className="SettingsDockpane_ShowButton" loadOnClick="true" smallImage="Images\GenericButtonPurple16.png" largeImage="Images\GenericButtonPurple32.png">
-          <tooltip heading="Show Dockpane">Show Dockpane<disabledText /></tooltip>
+          <tooltip heading="Settings">
+            Show settings<disabledText />
+          </tooltip>
         </button>
         <button id="VisualMagnitude_SettingsDockpane_MenuButton" caption="Burger Menu Button" className="SettingsDockpane_MenuButton" loadOnClick="true" smallImage="Images\GenericButtonPurple16.png" largeImage="Images\GenericButtonPurple32.png">
-          <tooltip heading="Burger Menu Button">ToolTip<disabledText /></tooltip>
+          <tooltip heading="Burger Menu Button">
+            ToolTip<disabledText />
+          </tooltip>
         </button>
+        <comboBox id="VisualMagnitude_DemComboBox" caption="DEM" className="DemComboBox" itemWidth="140" extendedCaption="Select DEM layer" isEditable="false" isReadOnly="true" resizable="true">
+          <tooltip heading="DEM layer">
+            Select a layer which contains DEM (Digital Elevation Model).<disabledText />
+          </tooltip>
+        </comboBox>
+        <comboBox id="VisualMagnitude_ViewpointsComboBox" caption="Viewpoints"  className="ViewpointsComboBox" itemWidth="140" extendedCaption="Select layer with viewpoints." isEditable="false" isReadOnly="true" resizable="true">
+          <tooltip heading="Viewpoint layer">
+            Select a layer which contains viewpoints - points or polyline.<disabledText />
+          </tooltip>
+        </comboBox>
         <button id="VisualMagnitude_StartAnalysisButton" caption="Start Analysis" className="StartAnalysisButton" loadOnClick="true" smallImage="Images\GenericButtonBlue16.png" largeImage="Images\GenericButtonBlue32.png">
-          <tooltip heading="Tooltip Heading">Tooltip text<disabledText /></tooltip>
+          <tooltip heading="Start analysis">
+            Start visual magnitude analysis<disabledText />
+          </tooltip>
         </button>
       </controls>
       <dockPanes>

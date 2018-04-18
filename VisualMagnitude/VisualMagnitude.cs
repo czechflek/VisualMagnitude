@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Input;
-using ArcGIS.Desktop.Framework;
+﻿using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
-using System.Threading.Tasks;
 
 namespace VisualMagnitude {
-    internal class Module1 : Module {
-        private static Module1 _this = null;
+    internal class VisualMagnitude : Module {
+        private static VisualMagnitude _this = null;
 
         /// <summary>
         /// Retrieve the singleton instance to this module here
         /// </summary>
-        public static Module1 Current {
+        public static VisualMagnitude Current {
             get {
-                return _this ?? (_this = (Module1)FrameworkApplication.FindModule("VisualMagnitude_Module"));
+                return _this ?? (_this = (VisualMagnitude)FrameworkApplication.FindModule("VisualMagnitude_Module"));
             }
         }
 
