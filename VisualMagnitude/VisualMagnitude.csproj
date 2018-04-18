@@ -115,6 +115,7 @@
     <AddInContent Include="DarkImages\AddInDesktop32.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analysis.cs" />
     <Compile Include="LayerComboBox.cs" />
     <Compile Include="DemComboBox.cs" />
     <Compile Include="GarbageHelper.cs" />

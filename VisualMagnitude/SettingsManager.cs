@@ -47,7 +47,7 @@ namespace VisualMagnitude {
                 settings.OmittedRings = int.Parse(xmlSettings.Element("OmittedRings").Value);
                 settings.WorkerThreads = int.Parse(xmlSettings.Element("WorkerThreads").Value);
                 settings.OutputFilename = xmlSettings.Element("OutputFilename").Value;
-            } catch (FileNotFoundException) {
+            } catch (Exception) {
                 CreateDefaultSettings();
             }
             CurrentSettings = settings;

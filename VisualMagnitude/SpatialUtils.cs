@@ -63,9 +63,6 @@ namespace VisualMagnitude {
         /// <param name="cellX">X coordinate of the cell</param>
         /// <returns></returns>
         public bool IsCellVisible(GeoMap losMap, int cellY, int cellX) {
-            if(cellY == 44 && cellX == 47) {
-                System.Diagnostics.Debug.WriteLine((-Math.Atan2(Viewpoint.X - cellX, Viewpoint.Y - cellY) + 2 * Math.PI));
-            }
             Orientation cellOrientation = GetCellOrientation(cellY, cellX);
             GetNeighborCells(cellY, cellX, cellOrientation, out int adjacentY, out int adjacentX, out int offsetY, out int offsetX);
 

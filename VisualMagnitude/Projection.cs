@@ -11,13 +11,12 @@ using System.Threading.Tasks;
 /// Must be called on MCT
 /// </summary>
 namespace VisualMagnitude {
-    
+
     /// <summary>
     /// Class handling conversion of vector viewpoints to raster coordinates. It stores the converted viewpoints.
     /// </summary>
     class Projection : IEnumerable {
         Raster inputRaster;
-        FeatureType viewpointType;
         String tempFolderPath;
         double stepLength = SettingsManager.Instance.CurrentSettings.LineInterval;
         HashSet<Tuple<int, int>> viewpoints = new HashSet<Tuple<int, int>>();
@@ -26,20 +25,14 @@ namespace VisualMagnitude {
         private const string tempFeatureDatasetName = "tempFeatureDataset";
         private const string tempFeatureClassName = "tempFeatureClass";
 
-        public enum FeatureType {
-            POINTS,
-            LINES
-        }
-
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="inputRaster">Raster map</param>
         /// <param name="viewpointType">Type of the vector</param>
         /// <param name="tempFolderPath">Path for temporary files</param>
-        public Projection(Raster inputRaster, FeatureType viewpointType, String tempFolderPath) {
+        public Projection(Raster inputRaster, String tempFolderPath) {
             this.inputRaster = inputRaster;
-            this.viewpointType = viewpointType;
             this.tempFolderPath = tempFolderPath;
         }
 
@@ -50,7 +43,8 @@ namespace VisualMagnitude {
         /// <returns>True on success</returns>
         public async Task<bool> CalculateViewpoints(BasicFeatureLayer viewpointLayer) {
             //TODO: check for failures
-            if (viewpointType == FeatureType.LINES) {
+            if (viewpointLayer.ShapeType == ArcGIS.Core.CIM.esriGeometryType.esriGeometryPolyline 
+                || viewpointLayer.ShapeType == ArcGIS.Core.CIM.esriGeometryType.esriGeometryLine) {
                 // Sequence of tools which converts vertices of polylines to points
                 var fileGDBResult = await Toolbox.CreateFileGDB(tempFolderPath, tempGdbName);
                 System.Diagnostics.Debug.WriteLine(fileGDBResult.ReturnValue);
@@ -69,13 +63,15 @@ namespace VisualMagnitude {
                 var xyResult = await Toolbox.AddXY(verticesResult.ReturnValue);
                 System.Diagnostics.Debug.WriteLine(xyResult.ReturnValue);
                 viewpoints = GetLine(fileGDBResult.ReturnValue, tempFeatureClassName);
-            } else {
+            } else if (viewpointLayer.ShapeType == ArcGIS.Core.CIM.esriGeometryType.esriGeometryPoint) {
                 var xyResult = await Toolbox.AddXY(viewpointLayer);
                 System.Diagnostics.Debug.WriteLine(xyResult.ReturnValue);
                 viewpoints = GetPoints(viewpointLayer);
+            } else {
+                return await Task.FromResult(false);
             }
             System.Diagnostics.Debug.WriteLine("Total viewpoints: " + viewpoints.Count);
-            return true;
+            return await Task.FromResult(true);
         }
 
         /// <summary>
@@ -86,6 +82,10 @@ namespace VisualMagnitude {
             //TODO: check if the points are inbounds (MapToPixel works for OB points)
             return viewpoints.GetEnumerator();
 
+        }
+
+        public int GetViewpointsCount() {
+            return viewpoints.Count;
         }
 
         /// <summary>
