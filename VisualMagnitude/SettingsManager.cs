@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ArcGIS.Desktop.Mapping;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,9 @@ namespace VisualMagnitude {
     /// </summary>
     class SettingsManager {
         private static SettingsManager instance;
+
+        public RasterLayer SelectedDemLayer { get; set; }
+        public FeatureLayer SelectedViewpointLayer { get; set; }
 
         /// <summary>
         /// Private constructor. Initial settings are loaded.

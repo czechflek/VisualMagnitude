@@ -20,6 +20,7 @@ namespace VisualMagnitude {
 
             System.Diagnostics.Debug.WriteLine("************************************************************************");
             IReadOnlyList<Layer> selectedLayerList = MapView.Active.GetSelectedLayers();
+            
             BasicRasterLayer currentRasterLayer = null;
             BasicFeatureLayer currentFeatureLayer = null;
             foreach (Layer currentSelectedLayer in selectedLayerList) {
