@@ -108,7 +108,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <AddInContent Include="Config.daml" />
+    <AddInContent Include="Config.daml">
+      <SubType>Designer</SubType>
+    </AddInContent>
     <AddInContent Include="Images\AddInDesktop16.png" />
     <AddInContent Include="Images\AddInDesktop32.png" />
     <AddInContent Include="DarkImages\AddInDesktop16.png" />
@@ -137,37 +139,29 @@
     <Compile Include="WorkManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AddInContent Include="Images\GenericButtonPurple16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AddInContent Include="Images\GenericButtonPurple32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AddInContent Include="DarkImages\GenericButtonPurple16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AddInContent Include="DarkImages\GenericButtonPurple32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Page Include="SettingsDockpane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <AddInContent Include="Images\GenericButtonBlue16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AddInContent Include="Images\GenericButtonBlue32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AddInContent Include="DarkImages\GenericButtonBlue16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AddInContent Include="DarkImages\GenericButtonBlue32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <AddInContent Include="Images\Gear16.png" />
+    <AddInContent Include="Images\Gear32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AddInContent Include="DarkImages\Gear16.png" />
+    <AddInContent Include="DarkImages\Gear32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AddInContent Include="DarkImages\Start16.png" />
+    <AddInContent Include="DarkImages\Start32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AddInContent Include="Images\Start16.png" />
+    <AddInContent Include="Images\Start32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!--

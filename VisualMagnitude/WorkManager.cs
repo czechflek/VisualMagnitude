@@ -32,7 +32,6 @@ namespace VisualMagnitude {
         /// <param name="viewpoint">Viewpoint</param>
         public void AddWork(SpatialUtils.ViewpointProps viewpoint) {
             workQueue.Enqueue(viewpoint);
-            System.Diagnostics.Debug.WriteLine("New VP: [{0},{1}]", viewpoint.Y, viewpoint.X);
         }
 
         /// <summary>

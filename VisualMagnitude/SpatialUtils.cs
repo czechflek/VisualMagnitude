@@ -399,11 +399,6 @@ namespace VisualMagnitude {
         /// Structure to store two cells.
         /// </summary>
         private struct LosCells {
-            int yCell1;
-            int xCell1;
-            int yCell2;
-            int xCell2;
-
             public LosCells(int yCell1, int xCell1, int yCell2, int xCell2) : this() {
                 YCell1 = yCell1;
                 XCell1 = xCell1;
