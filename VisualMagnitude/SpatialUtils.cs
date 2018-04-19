@@ -83,25 +83,31 @@ namespace VisualMagnitude {
         /// </summary>
         /// <param name="cellY">Y coordinate of the cell</param>
         /// <param name="cellX">X coordinate of the cell</param>
-        /// <returns>visual magnitude value</returns>
-        public double GetVisualMagnutude(int cellY, int cellX) { //TODO: typo!
+        /// <returns>Visual magnitude value</returns>
+        public double GetVisualMagnitude(int cellY, int cellX) { //TODO: typo!
             double distance = GetDistance(cellY, cellX);
 
-            double viewingSlope = GetViewingSlope(cellY, cellX);
-            double viewingAspect = GetViewingAspect(cellY, cellX);
-            Vector3 viewVector = MakeNormalizedVector(viewingAspect, viewingSlope);
+            //if the viewpoints are wind turbines, we can ignore the cell slope
+            if (SettingsManager.Instance.CurrentSettings.WindTurbines) {
+                return Math.Pow(cellResolution, 2) / Math.Pow(distance, 2);
+            } else {
+                double viewingSlope = GetViewingSlope(cellY, cellX);
+                double viewingAspect = GetViewingAspect(cellY, cellX);
+                Vector3 viewVector = MakeNormalizedVector(viewingAspect, viewingSlope);
 
-            double cellSlope = GetCellSlope(cellY, cellX);
-            double cellAspect = GetCellAspect(cellY, cellX);
-            Vector3 cellNormal = MakeNormalizedVector(cellAspect, cellSlope);
+                double cellSlope = GetCellSlope(cellY, cellX);
+                double cellAspect = GetCellAspect(cellY, cellX);
+                Vector3 cellNormal = MakeNormalizedVector(cellAspect, cellSlope);
 
-            double vectorAngle = GetVectorAngle(viewVector, cellNormal);
+                double vectorAngle = GetVectorAngle(viewVector, cellNormal);
 
-            if (vectorAngle < Math.PI / 2) {
-                return 0D;
+                if (vectorAngle < Math.PI / 2) {
+                    return 0D;
+                }
+
+                return (Math.Pow(cellResolution, 2) / Math.Pow(distance, 2)) * Math.Abs(Math.Cos(vectorAngle));
             }
-
-            return (Math.Pow(cellResolution, 2) / Math.Pow(distance, 2)) * Math.Abs(Math.Cos(vectorAngle));
+           
         }
 
         /// <summary>

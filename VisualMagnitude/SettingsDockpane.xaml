@@ -23,9 +23,6 @@
         </Grid.RowDefinitions>
 
         <DockPanel Grid.Row="0" LastChildFill="true" KeyboardNavigation.TabNavigation="Local" Height="30">
-            <controls:BurgerButton DockPanel.Dock="Right"
-                ToolTip="{Binding BurgerButtonTooltip}"
-                PopupMenu="{Binding BurgerButtonMenu}"/>
             <TextBlock Grid.Column="1" Text="{Binding Heading}" Style="{DynamicResource Esri_TextBlockDockPaneHeader}">
                 <TextBlock.ToolTip>
                     <WrapPanel Orientation="Vertical" MaxWidth="300">

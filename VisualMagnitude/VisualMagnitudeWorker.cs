@@ -63,7 +63,7 @@ namespace VisualMagnitude {
                 GeoMap.Ring ring = elevationMap.GetRing(viewpoint.Y, viewpoint.X, i);
                 foreach (int[] item in ring) {
                     if (spatialUtils.IsCellVisible(losMap, item[0], item[1])) {
-                        visualMagnitude = spatialUtils.GetVisualMagnutude(item[0], item[1]);
+                        visualMagnitude = spatialUtils.GetVisualMagnitude(item[0], item[1]);
                         if (visualMagnitude > 0)
                             sumator.AddResult(new Sumator.VisualMagnitudeResult(item[0], item[1], visualMagnitude));
                     }

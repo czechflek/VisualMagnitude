@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
@@ -21,13 +22,6 @@ namespace VisualMagnitude {
         public SettingsDockpaneViewModel() {
             NumberFormatInfo nfi = CultureInfo.CurrentCulture.NumberFormat;
             _saveCommand = new RelayCommand(() => SaveSettings(), () => true);
-            SettingsManager settingsManager = SettingsManager.Instance;
-            AltOffset = settingsManager.CurrentSettings.AltOffset.ToString();
-            OmittedRings = settingsManager.CurrentSettings.OmittedRings.ToString();
-            LineInterval = settingsManager.CurrentSettings.LineInterval.ToString();
-            OutputFilename = settingsManager.CurrentSettings.OutputFilename;
-            WorkerThreads = settingsManager.CurrentSettings.WorkerThreads.ToString();
-
         }
 
         /// <summary>
@@ -37,8 +31,31 @@ namespace VisualMagnitude {
             DockPane pane = FrameworkApplication.DockPaneManager.Find(_dockPaneID);
             if (pane == null)
                 return;
-
+            
             pane.Activate();
+        }
+
+        /// <summary>
+        /// Asynchronously initialize values in the dockpane.
+        /// </summary>
+        /// <returns>Task</returns>
+        protected override Task InitializeAsync() {
+            Task task = base.InitializeAsync();
+            LoadSettings();
+            return task;
+        }
+
+        /// <summary>
+        /// Load current settings to the dockpane.
+        /// </summary>
+        public void LoadSettings() {
+            SettingsManager settingsManager = SettingsManager.Instance;
+            AltOffset = settingsManager.CurrentSettings.AltOffset.ToString();
+            OmittedRings = settingsManager.CurrentSettings.OmittedRings.ToString();
+            LineInterval = settingsManager.CurrentSettings.LineInterval.ToString();
+            OutputFilename = settingsManager.CurrentSettings.OutputFilename;
+            WorkerThreads = settingsManager.CurrentSettings.WorkerThreads.ToString();
+            WindTurbines = settingsManager.CurrentSettings.WindTurbines;
         }
 
         /// <summary>
@@ -50,7 +67,8 @@ namespace VisualMagnitude {
                 LineInterval = SettingsManager.Settings.StringToDouble(LineInterval),
                 OmittedRings = int.Parse(OmittedRings),
                 OutputFilename = OutputFilename,
-                WorkerThreads = int.Parse(WorkerThreads)
+                WorkerThreads = int.Parse(WorkerThreads),
+                WindTurbines = WindTurbines
             };
 
             SettingsManager.Instance.SaveSettings(settings);
@@ -62,11 +80,12 @@ namespace VisualMagnitude {
         public string OmittedRings { get; set; }
         public string LineInterval { get; set; }
         public string WorkerThreads { get; set; }
+        public bool WindTurbines { get; set; }
 
         /// <summary>
         /// Text shown near the top of the DockPane.
         /// </summary>
-        private string _heading = "Visual Magnitude Settings";
+        private string _heading = "Settings";
         public string Heading {
             get { return _heading; }
             set {
@@ -99,14 +118,6 @@ namespace VisualMagnitude {
     internal class SettingsDockpane_ShowButton : Button {
         protected override void OnClick() {
             SettingsDockpaneViewModel.Show();
-        }
-    }
-
-    /// <summary>
-    /// Button implementation for the button on the menu of the burger button.
-    /// </summary>
-    internal class SettingsDockpane_MenuButton : Button {
-        protected override void OnClick() {
         }
     }
 }

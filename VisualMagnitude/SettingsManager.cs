@@ -1,6 +1,8 @@
-﻿using ArcGIS.Desktop.Mapping;
+﻿using ArcGIS.Desktop.Core;
+using ArcGIS.Desktop.Mapping;
 using System;
 using System.IO;
+using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -40,13 +42,16 @@ namespace VisualMagnitude {
         /// <returns>Settings container</returns>
         public Settings LoadSettings() {
             Settings settings = new Settings();
+
             try {
-                XElement xmlSettings = XElement.Load("VisualMagnitudeConfig.xml");
+                XDocument xmlDocument = XDocument.Load("VisualMagnitudeConfig.xml");
+                XElement xmlSettings = xmlDocument.Element("VisualMagnitude");
                 settings.AltOffset = Settings.StringToDouble(xmlSettings.Element("AltOffset").Value);
                 settings.LineInterval = Settings.StringToDouble(xmlSettings.Element("LineInterval").Value);
                 settings.OmittedRings = int.Parse(xmlSettings.Element("OmittedRings").Value);
-                settings.WorkerThreads = int.Parse(xmlSettings.Element("WorkerThreads").Value);
                 settings.OutputFilename = xmlSettings.Element("OutputFilename").Value;
+                settings.WorkerThreads = int.Parse(xmlSettings.Element("WorkerThreads").Value);
+                settings.WindTurbines = bool.Parse(xmlSettings.Element("WindTurbines").Value);
             } catch (Exception) {
                 CreateDefaultSettings();
             }
@@ -67,6 +72,7 @@ namespace VisualMagnitude {
                 writer.WriteElementString("OmittedRings", settings.OmittedRings.ToString());
                 writer.WriteElementString("OutputFilename", settings.OutputFilename);
                 writer.WriteElementString("WorkerThreads", settings.WorkerThreads.ToString());
+                writer.WriteElementString("WindTurbines", settings.WindTurbines.ToString());
                 writer.WriteEndElement();
                 writer.WriteEndDocument();
             }
@@ -96,6 +102,7 @@ namespace VisualMagnitude {
                 OmittedRings = 0;
                 WorkerThreads = 4;
                 OutputFilename = "VisualMagnitude.tiff";
+                WindTurbines = false;
             }
 
             public double AltOffset { get; set; }
@@ -103,6 +110,7 @@ namespace VisualMagnitude {
             public int OmittedRings { get; set; }
             public string OutputFilename { get; set; }
             public int WorkerThreads { get; set; }
+            public bool WindTurbines { get; set; }
 
             /// <summary>
             /// Convert string to double.
