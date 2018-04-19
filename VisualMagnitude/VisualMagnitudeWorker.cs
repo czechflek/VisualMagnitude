@@ -1,6 +1,10 @@
 ﻿using System.Collections.Concurrent;
 
 namespace VisualMagnitude {
+
+    /// <summary>
+    /// Worker which calculates a visual magnite from a viewpoint.
+    /// </summary>
     class VisualMagnitudeWorker {
         private SpatialUtils spatialUtils;
         private int omittedRings = SettingsManager.Instance.CurrentSettings.OmittedRings;
@@ -10,6 +14,13 @@ namespace VisualMagnitude {
         private Sumator sumator;
         private WorkManager parent;
 
+        /// <summary>
+        /// Contructor to initialize the worker.
+        /// </summary>
+        /// <param name="workQueue">Work queue share amon workers.</param>
+        /// <param name="elevationMap">Elevation map</param>
+        /// <param name="sumator">Sumator instance</param>
+        /// <param name="parent">Work manager</param>
         public VisualMagnitudeWorker(ref ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue, ref GeoMap elevationMap, ref Sumator sumator, WorkManager parent) {
             spatialUtils = new SpatialUtils(ref elevationMap);
             this.workQueue = workQueue;
@@ -18,6 +29,9 @@ namespace VisualMagnitude {
             this.parent = parent;
         }
 
+        /// <summary>
+        /// Start processing the work queue.
+        /// </summary>
         public void Start() {
             GeoMap losMap = new GeoMap(elevationMap.GetLength(0), elevationMap.GetLength(1));
 
@@ -29,6 +43,11 @@ namespace VisualMagnitude {
             parent.ThreadFinished();
         }
 
+        /// <summary>
+        /// Calculate the visual magintude from a viewpoint.
+        /// </summary>
+        /// <param name="viewpoint">Viewpoint</param>
+        /// <param name="losMap">LOS map</param>
         private void CalculateVisualMagnitude(SpatialUtils.ViewpointProps viewpoint, GeoMap losMap) {
             double visualMagnitude;
 
@@ -47,15 +66,17 @@ namespace VisualMagnitude {
                         visualMagnitude = spatialUtils.GetVisualMagnutude(item[0], item[1]);
                         if (visualMagnitude > 0)
                             sumator.AddResult(new Sumator.VisualMagnitudeResult(item[0], item[1], visualMagnitude));
-
-                        //System.Diagnostics.Debug.WriteLine("{0}", visualMagnitude);
                     }
-                    //System.Diagnostics.Debug.WriteLine("[{0},{1}] = done", viewpoint.Y, viewpoint.X);
 
                 }
             }            
         }
 
+        /// <summary>
+        /// Get the maximum distance from the viewpoint to the edge of the map.
+        /// </summary>
+        /// <param name="viewpoint">Viewpoint</param>
+        /// <returns>Maximum distance from viewpoint to the edge</returns>
         private int GetMaximumDistance(SpatialUtils.ViewpointProps viewpoint) {
             int maxDistance = viewpoint.X;
 

@@ -10,8 +10,15 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 
 namespace VisualMagnitude {
+
+    /// <summary>
+    /// Clss reporesenting the Start analysis button.
+    /// </summary>
     internal class StartAnalysisButton : Button {
 
+        /// <summary>
+        /// Event triggered when user clicks the button.
+        /// </summary>
         protected override void OnClick() {
             try {
                 Analysis analysis = new Analysis();

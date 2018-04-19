@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace VisualMagnitude {
+    
+    /// <summary>
+    /// Class which manages all worker threads.
+    /// </summary>
     class WorkManager {
         private ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue = new ConcurrentQueue<SpatialUtils.ViewpointProps>();
         private Sumator sumator;
@@ -12,17 +16,29 @@ namespace VisualMagnitude {
         private int runningThreads;
         static AutoResetEvent autoEvent = new AutoResetEvent(false);        
 
+        /// <summary>
+        /// Contructor.
+        /// </summary>
+        /// <param name="threadCount">Number of workers</param>
         public WorkManager(int threadCount) {
             this.threadCount = threadCount;
             threads = new Thread[threadCount];
             
         }
 
+        /// <summary>
+        /// Add a new viewpoint to be calculated.
+        /// </summary>
+        /// <param name="viewpoint">Viewpoint</param>
         public void AddWork(SpatialUtils.ViewpointProps viewpoint) {
             workQueue.Enqueue(viewpoint);
             System.Diagnostics.Debug.WriteLine("New VP: [{0},{1}]", viewpoint.Y, viewpoint.X);
         }
 
+        /// <summary>
+        /// Start calculationg the visual magnitude.
+        /// </summary>
+        /// <param name="elevationMap">Elevation map</param>
         public void StartWorking(ref GeoMap elevationMap) {
             sumator = new Sumator(elevationMap.GetLength(0), elevationMap.GetLength(1));
             sumator.Start();
@@ -36,6 +52,9 @@ namespace VisualMagnitude {
             }
         }
 
+        /// <summary>
+        /// Listens for workers who finished their calculations and ensures the sumator won"t stop until everything is done.
+        /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void ThreadFinished() {
             runningThreads--;
@@ -45,6 +64,10 @@ namespace VisualMagnitude {
             }
         }
 
+        /// <summary>
+        /// Retrieve the results.
+        /// </summary>
+        /// <returns>Results</returns>
         public GeoMap GetResult() {
             return sumator.VisualMagnitudeMap;
         }

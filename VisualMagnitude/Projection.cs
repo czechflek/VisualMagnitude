@@ -84,6 +84,10 @@ namespace VisualMagnitude {
 
         }
 
+        /// <summary>
+        /// Get the number of viewpoints.
+        /// </summary>
+        /// <returns></returns>
         public int GetViewpointsCount() {
             return viewpoints.Count;
         }
