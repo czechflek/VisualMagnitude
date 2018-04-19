@@ -17,6 +17,9 @@ namespace VisualMagnitude {
         private GarbageHelper() {
         }
 
+        /// <summary>
+        /// Get an instance of this singleton.
+        /// </summary>
         public static GarbageHelper Instance {
             get {
                 if (instance == null) {
@@ -25,7 +28,6 @@ namespace VisualMagnitude {
                 return instance;
             }
         }
-
 
         /// <summary>
         /// Add a file to be deleted.
@@ -45,7 +47,7 @@ namespace VisualMagnitude {
                 }
                 garbage.Clear();
             });
-            
+
         }
     }
 }

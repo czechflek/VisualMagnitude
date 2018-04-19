@@ -44,14 +44,12 @@ namespace VisualMagnitude {
             };
         }
 
-        public SpatialUtils(ref GeoMap elevationMap, ViewpointProps viewpoint) {
-            Viewpoint = viewpoint;
-            this.cellResolution = elevationMap.CellSize;
-            this.elevationMap = elevationMap;
-        }
-
+        /// <summary>
+        /// Constructor. Initialize the class with an elevation map.
+        /// </summary>
+        /// <param name="elevationMap">Elevtion map</param>
         public SpatialUtils(ref GeoMap elevationMap) {
-            this.cellResolution = elevationMap.CellSize;
+            cellResolution = elevationMap.CellSize;
             ElevationMap = elevationMap;
         }
 
@@ -85,25 +83,31 @@ namespace VisualMagnitude {
         /// </summary>
         /// <param name="cellY">Y coordinate of the cell</param>
         /// <param name="cellX">X coordinate of the cell</param>
-        /// <returns>visual magnitude value</returns>
-        public double GetVisualMagnutude(int cellY, int cellX) { //TODO: typo!
+        /// <returns>Visual magnitude value</returns>
+        public double GetVisualMagnitude(int cellY, int cellX) { //TODO: typo!
             double distance = GetDistance(cellY, cellX);
 
-            double viewingSlope = GetViewingSlope(cellY, cellX);
-            double viewingAspect = GetViewingAspect(cellY, cellX);
-            Vector3 viewVector = MakeNormalizedVector(viewingAspect, viewingSlope);
+            //if the viewpoints are wind turbines, we can ignore the cell slope
+            if (SettingsManager.Instance.CurrentSettings.WindTurbines) {
+                return Math.Pow(cellResolution, 2) / Math.Pow(distance, 2);
+            } else {
+                double viewingSlope = GetViewingSlope(cellY, cellX);
+                double viewingAspect = GetViewingAspect(cellY, cellX);
+                Vector3 viewVector = MakeNormalizedVector(viewingAspect, viewingSlope);
 
-            double cellSlope = GetCellSlope(cellY, cellX);
-            double cellAspect = GetCellAspect(cellY, cellX);
-            Vector3 cellNormal = MakeNormalizedVector(cellAspect, cellSlope);
+                double cellSlope = GetCellSlope(cellY, cellX);
+                double cellAspect = GetCellAspect(cellY, cellX);
+                Vector3 cellNormal = MakeNormalizedVector(cellAspect, cellSlope);
 
-            double vectorAngle = GetVectorAngle(viewVector, cellNormal);
+                double vectorAngle = GetVectorAngle(viewVector, cellNormal);
 
-            if (vectorAngle < Math.PI / 2) {
-                return 0D;
+                if (vectorAngle < Math.PI / 2) {
+                    return 0D;
+                }
+
+                return (Math.Pow(cellResolution, 2) / Math.Pow(distance, 2)) * Math.Abs(Math.Cos(vectorAngle));
             }
-
-            return (Math.Pow(cellResolution, 2) / Math.Pow(distance, 2)) * Math.Abs(Math.Cos(vectorAngle));
+           
         }
 
         /// <summary>
@@ -249,6 +253,13 @@ namespace VisualMagnitude {
             }
         }
 
+        /// <summary>
+        /// Get the cell slope in radians based on its circular neighborhood. The results is the angle between vertical axis and normal of the cell.
+        /// E.g. 0 = cell is completely flat, pi/2 = the cell is a vertical wall. 
+        /// </summary>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <returns>Cell slope in radians</returns>
         private double GetCellSlope(int cellY, int cellX) {
             double cn = Math.Sqrt(2);
             double northsouth;
@@ -277,6 +288,12 @@ namespace VisualMagnitude {
             return GetVectorAngle(slopeVector, verticalVector);
         }
 
+        /// <summary>
+        /// Determine in which cardinal direction the cell is relative to the viewpoint.
+        /// </summary>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <returns>Cell's cardinal direction</returns>
         private Orientation GetCellOrientation(int cellY, int cellX) {
             int orientationCode = GetCellOrientationCode(cellY, cellX);
             switch (orientationCode) {
@@ -317,6 +334,12 @@ namespace VisualMagnitude {
             }
         }
 
+        /// <summary>
+        /// Calculate segment code in which the cell is relative to the viewpoint.
+        /// </summary>
+        /// <param name="cellY">Y coordinate of the cell</param>
+        /// <param name="cellX">X coordinate of the cell</param>
+        /// <returns>Segment code</returns>
         private int GetCellOrientationCode(int cellY, int cellX) {
             int relativeX = cellX - viewpoint.X;
             int relativeY = cellY - viewpoint.Y;
@@ -378,12 +401,10 @@ namespace VisualMagnitude {
         public ViewpointProps Viewpoint { get => viewpoint; set => viewpoint = value; }
         public GeoMap ElevationMap { get => elevationMap; set => elevationMap = value; }
 
+        /// <summary>
+        /// Structure to store two cells.
+        /// </summary>
         private struct LosCells {
-            int yCell1;
-            int xCell1;
-            int yCell2;
-            int xCell2;
-
             public LosCells(int yCell1, int xCell1, int yCell2, int xCell2) : this() {
                 YCell1 = yCell1;
                 XCell1 = xCell1;
@@ -400,6 +421,9 @@ namespace VisualMagnitude {
             public int XCell2 { get; set; }
         }
 
+        /// <summary>
+        /// Structure to store the viewpoint properties.
+        /// </summary>
         public class ViewpointProps {
             private int y;
             private int x;

@@ -12,17 +12,27 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 
 namespace VisualMagnitude {
+    /// <summary>
+    /// Class which manages the whole calculation process from start to finish.
+    /// </summary>
     class Analysis {
+        //TODO: make this configurable
         private readonly string outputFolderName = "VisualMagnitudeOutput";
         private readonly string tmpRasterName = "tmp.tiff";
         private readonly string rasterFormat = "TIFF";
 
         private string outputFolder;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         public Analysis() {
             /* empty */
         }
 
+        /// <summary>
+        /// Asynchrnously start the visual magnitude analysis.
+        /// </summary>
         public async void StartAnalysis() {
             if (!ValidateInputLayers()) {
                 return;
@@ -30,7 +40,7 @@ namespace VisualMagnitude {
             outputFolder = CreateOutputDirectory(outputFolderName);
             if (File.Exists(outputFolder + "/" + SettingsManager.Instance.CurrentSettings.OutputFilename)) {
                 System.Windows.MessageBoxResult messageResult = MessageBox.Show("The output file already exists and will be overwritten. Continue?", "File exists!", System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Warning);
-                if(messageResult == System.Windows.MessageBoxResult.OK) {
+                if (messageResult == System.Windows.MessageBoxResult.OK) {
                     GarbageHelper.Instance.AddGarbage(outputFolder + "/" + SettingsManager.Instance.CurrentSettings.OutputFilename);
                     GarbageHelper.Instance.CleanUp();
                 } else {
@@ -38,6 +48,7 @@ namespace VisualMagnitude {
                 }
             }
 
+            ///most tasks have to run on MCT thread
             await QueuedTask.Run(async () => {
                 outputFolder = CreateOutputDirectory(outputFolderName);
                 FileSystemDatastore outputDataStore = CreateNewDatastore();
@@ -62,12 +73,12 @@ namespace VisualMagnitude {
                         workManager.AddWork(new SpatialUtils.ViewpointProps(viewpoint.Item2, viewpoint.Item1));
                     }
                 }
-                if(invalidViewpointsCount > 0) {
+                if (invalidViewpointsCount > 0) {
                     string message = invalidViewpointsCount.ToString()
                         + (invalidViewpointsCount == 1
                             ? " viewpoint was invalid or failed to process."
                             : " viewpoints were invalid or failed to process.");
-                        MessageBox.Show(message, "Ignored viewpoints", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    MessageBox.Show(message, "Ignored viewpoints", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 }
 
                 //wait for the calculation of the visual magnitude for all viewpoints to finish
@@ -75,7 +86,7 @@ namespace VisualMagnitude {
                 workManager.StartWorking(ref elevationMap);
                 WorkManager.AutoEvent.WaitOne();
                 GeoMap result = workManager.GetResult();
-                System.Diagnostics.Debug.WriteLine("Computation finished\n------------ Time: {0} seconds\nViewpoints: {1}", watch.ElapsedMilliseconds/1000, projection.GetViewpointsCount());
+                System.Diagnostics.Debug.WriteLine("Computation finished\n------------ Time: {0} seconds\nViewpoints: {1}", watch.ElapsedMilliseconds / 1000, projection.GetViewpointsCount());
 
                 //save and display the result
                 WriteToRaster(raster, outputDataStore, result);
@@ -86,6 +97,11 @@ namespace VisualMagnitude {
                 GarbageHelper.Instance.CleanUp();
             });
         }
+
+        /// <summary>
+        /// Check if user celected the input layers correctly.
+        /// </summary>
+        /// <returns>True if valid, false otherwise</returns>
         private bool ValidateInputLayers() {
             if (SettingsManager.Instance.SelectedDemLayer == null) {
                 MessageBox.Show("Invalid DEM layer", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
@@ -98,12 +114,21 @@ namespace VisualMagnitude {
             return true;
         }
 
+        /// <summary>
+        /// Create a new folder in the project.
+        /// </summary>
+        /// <param name="outputFolderName">Folder name</param>
+        /// <returns>Path to the folder</returns>
         private string CreateOutputDirectory(string outputFolderName) {
             string folder = Path.Combine(Project.Current.HomeFolderPath, outputFolderName);
             Directory.CreateDirectory(folder);
             return folder;
         }
 
+        /// <summary>
+        /// Create a new filesystem datastore.
+        /// </summary>
+        /// <returns></returns>
         private FileSystemDatastore CreateNewDatastore() {
             FileSystemConnectionPath outputConnectionPath = new FileSystemConnectionPath(
                                     new Uri(outputFolder), FileSystemDatastoreType.Raster);
@@ -111,6 +136,11 @@ namespace VisualMagnitude {
             return outputDataStore;
         }
 
+        /// <summary>
+        /// Convert the DEM raster to internal elevation map.
+        /// </summary>
+        /// <param name="raster">DEM raster</param>
+        /// <returns>Elevation map</returns>
         private GeoMap CreateElevationMap(Raster raster) {
             PixelBlock currentPixelBlock = raster.CreatePixelBlock(raster.GetWidth(), raster.GetHeight());
             raster.Read(0, 0, currentPixelBlock);
@@ -127,6 +157,12 @@ namespace VisualMagnitude {
             return elevationMap;
         }
 
+        /// <summary>
+        /// Write results to a rester.
+        /// </summary>
+        /// <param name="raster">DEM raster</param>
+        /// <param name="outputDataStore">Output datastore</param>
+        /// <param name="result">Elevation map with resuluts</param>
         private void WriteToRaster(Raster raster, FileSystemDatastore outputDataStore, GeoMap result) {
             raster.SetNoDataValue(0);
             raster.SetPixelType(RasterPixelType.DOUBLE);

@@ -1,7 +1,7 @@
 ﻿<ArcGIS defaultAssembly="VisualMagnitude.dll" defaultNamespace="VisualMagnitude" xmlns="http://schemas.esri.com/DADF/Registry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.esri.com/DADF/Registry file:///D:/Programs/ArcGis%20Pro/bin/ArcGIS.Desktop.Framework.xsd">
-  <AddInInfo id="{0708fa54-4e67-4460-b914-4172853b3130}" version="1.0" desktopVersion="2.1.10257">
-    <Name>VisualMagnitude</Name>
-    <Description>VisualMagnitude description</Description>
+  <AddInInfo id="{0708fa54-4e67-4460-b914-4172853b3130}" version="0.3" desktopVersion="2.1.10257">
+    <Name>Visual Magnitude</Name>
+    <Description>Tool to calculate visual magnitude.</Description>
     <Image>Images\AddinDesktop32.png</Image>
     <Author>Jakub Cech</Author>
     <Company>Kansas State University</Company>
@@ -30,14 +30,9 @@
         </group>
       </groups>
       <controls>
-        <button id="VisualMagnitude_SettingsDockpane_ShowButton" caption="Settings" className="SettingsDockpane_ShowButton" loadOnClick="true" smallImage="Images\GenericButtonPurple16.png" largeImage="Images\GenericButtonPurple32.png">
+        <button id="VisualMagnitude_SettingsDockpane_ShowButton" caption="Settings" className="SettingsDockpane_ShowButton" loadOnClick="true" smallImage="Images\Gear16.png" largeImage="Images\Gear32.png">
           <tooltip heading="Settings">
             Show settings<disabledText />
-          </tooltip>
-        </button>
-        <button id="VisualMagnitude_SettingsDockpane_MenuButton" caption="Burger Menu Button" className="SettingsDockpane_MenuButton" loadOnClick="true" smallImage="Images\GenericButtonPurple16.png" largeImage="Images\GenericButtonPurple32.png">
-          <tooltip heading="Burger Menu Button">
-            ToolTip<disabledText />
           </tooltip>
         </button>
         <comboBox id="VisualMagnitude_DemComboBox" caption="DEM" className="DemComboBox" itemWidth="140" extendedCaption="Select DEM layer" isEditable="false" isReadOnly="true" resizable="true">
@@ -50,22 +45,17 @@
             Select a layer which contains viewpoints - points or polyline.<disabledText />
           </tooltip>
         </comboBox>
-        <button id="VisualMagnitude_StartAnalysisButton" caption="Start Analysis" className="StartAnalysisButton" loadOnClick="true" smallImage="Images\GenericButtonBlue16.png" largeImage="Images\GenericButtonBlue32.png">
+        <button id="VisualMagnitude_StartAnalysisButton" caption="Start Analysis" className="StartAnalysisButton" loadOnClick="true" smallImage="Images\Start16.png" largeImage="Images\Start32.png">
           <tooltip heading="Start analysis">
             Start visual magnitude analysis<disabledText />
           </tooltip>
         </button>
       </controls>
       <dockPanes>
-        <dockPane id="VisualMagnitude_SettingsDockpane" caption="SettingsDockpane" className="SettingsDockpaneViewModel" dock="group" dockWith="esri_core_contentsDockPane">
+        <dockPane id="VisualMagnitude_SettingsDockpane" caption="Visual Magnitude" className="SettingsDockpaneViewModel" dock="group" dockWith="esri_core_contentsDockPane">
           <content className="SettingsDockpaneView" />
         </dockPane>
       </dockPanes>
-      <menus>
-        <menu id="VisualMagnitude_SettingsDockpane_Menu" caption="Options" contextMenu="true">
-          <button refID="VisualMagnitude_SettingsDockpane_MenuButton" />
-        </menu>
-      </menus>
     </insertModule>
   </modules>
 </ArcGIS>

@@ -8,7 +8,7 @@ using ArcGIS.Desktop.Mapping;
 
 namespace VisualMagnitude {
     /// <summary>
-    /// Represents the ComboBox
+    /// Parent class for all combo boxes in the menu.
     /// </summary>
     internal class LayerComboBox<T> : ComboBox where T : Layer {
         private readonly ObservableCollection<T> listofLayers = new ObservableCollection<T>();
@@ -16,16 +16,13 @@ namespace VisualMagnitude {
         /// <summary>
         /// Combo Box constructor
         /// </summary>
-        public LayerComboBox() {
+        protected LayerComboBox() {
             UpdateCombo();
         }
-
-
 
         /// <summary>
         /// Updates the combo box with all the items.
         /// </summary>
-
         private async void UpdateCombo() {
             int lastLayerCount = listofLayers.Count;
             await RetrieveLayers();
@@ -41,6 +38,9 @@ namespace VisualMagnitude {
             SelectedItem = ItemCollection.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Event triggered when the drop down is opened.
+        /// </summary>
         protected override void OnDropDownOpened() {
             UpdateCombo();
         }
@@ -50,10 +50,14 @@ namespace VisualMagnitude {
         /// </summary>
         /// <param name="item">The newly selected combo box item</param>
         protected override void OnSelectionChange(ComboBoxItem item) {
-            T layer = FindLayerByName<T>(item.Text);
+            T layer = FindLayerByName(item.Text);
             SaveSelection(layer);
         }
 
+        /// <summary>
+        /// Save the selected layer. This method has to be overriden in children classes.
+        /// </summary>
+        /// <param name="layer">Selected layer</param>
         virtual protected void SaveSelection(T layer) {
             /* 
              * To be overriden. Should never be called.
@@ -61,7 +65,12 @@ namespace VisualMagnitude {
             throw new System.NotImplementedException();
         }
 
-        private T FindLayerByName<T>(string name) where T : Layer {
+        /// <summary>
+        /// Find a layer by the name.
+        /// </summary>
+        /// <param name="name">Name of the layer</param>
+        /// <returns>Actual layer</returns>
+        private T FindLayerByName(string name) {
             foreach (T layer in listofLayers as ObservableCollection<T>) {
                 if (layer.Name.Equals(name)) {
                     return layer;

@@ -10,6 +10,12 @@ namespace VisualMagnitude {
         public const double UndefinedValue = 100D;
         private double cellSize = 1;
 
+        /// <summary>
+        /// Allow the map to be treated as an array.
+        /// </summary>
+        /// <param name="y">Y index</param>
+        /// <param name="x">X index</param>
+        /// <returns>Stored value</returns>
         public double this[int y, int x] {
             get { return geoMap[y, x]; }
             set { geoMap[y, x] = value; }
@@ -59,20 +65,6 @@ namespace VisualMagnitude {
         public void Initialize() {
             ClearMap();
         }
-
-        /*
-        public Raster WriteDataToRaster(Raster raster) {
-            PixelBlock pixelBlock = raster.CreatePixelBlock(raster.GetWidth(), raster.GetHeight());
-            //raster.Read(0, 0, pixelBlock);
-            pixelBlock.Clear(0);
-            System.Diagnostics.Debug.WriteLine(pixelBlock.GetPlaneCount());
-            System.Diagnostics.Debug.WriteLine(raster.GetWidth() + "x" + raster.GetHeight());
-            pixelBlock.SetPixelData(0, geoMap);
-            raster.Write(0, 0, pixelBlock);
-            //raster.Refresh();
-            return raster;
-
-        }*/
 
         /// <summary>
         /// Initalize the ommited rings around a viewpont.
@@ -171,6 +163,9 @@ namespace VisualMagnitude {
             return new Ring(topleft, topright, bottomright, bottomleft, inbounds);
         }
 
+        /// <summary>
+        /// Get or set cell size.
+        /// </summary>
         public double CellSize { get => cellSize; set => cellSize = value; }
 
         /// <summary>

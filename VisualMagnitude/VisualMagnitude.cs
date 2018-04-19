@@ -2,6 +2,10 @@
 using ArcGIS.Desktop.Framework.Contracts;
 
 namespace VisualMagnitude {
+
+    /// <summary>
+    /// Main class of the whole module.
+    /// </summary>
     internal class VisualMagnitude : Module {
         private static VisualMagnitude _this = null;
 
