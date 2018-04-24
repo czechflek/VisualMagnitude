@@ -1,11 +1,7 @@
 ﻿using ArcGIS.Core.Data.Raster;
 using ArcGIS.Desktop.Core;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ArcGIS.Desktop.Framework.Dialogs;
 using ArcGIS.Core.Data;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
@@ -56,8 +52,17 @@ namespace VisualMagnitude {
                 //get viewpoints
                 Raster raster = SettingsManager.Instance.SelectedDemLayer.GetRaster();
                 Projection projection = new Projection(raster, outputFolder); //make the detection automatic
-                if (await projection.CalculateViewpoints(SettingsManager.Instance.SelectedViewpointLayer) == false) {
-                    MessageBox.Show("Invalid viewpoint layer type.\nOnly points, lines and polylines are supported.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                try {
+                    if (await projection.CalculateViewpoints(SettingsManager.Instance.SelectedViewpointLayer) == false) {
+                        MessageBox.Show("Invalid viewpoint layer type.\nOnly points, lines and polylines are supported.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        return;
+                    }
+                } catch (Exception) {
+                    if (SettingsManager.Instance.CurrentSettings.OffsetGlobal) {
+                        MessageBox.Show("Invalid viewpoint data.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    } else {
+                        MessageBox.Show("Invalid viewpoint data. Do the viewpoints have OFFSET column specified?", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    }
                     return;
                 }
 
@@ -66,11 +71,17 @@ namespace VisualMagnitude {
                 //initialize work manager
                 WorkManager workManager = new WorkManager(SettingsManager.Instance.CurrentSettings.WorkerThreads);
                 int invalidViewpointsCount = 0;
-                foreach (Tuple<int, int> viewpoint in projection) {
-                    if (viewpoint.Item2 < 0 || viewpoint.Item1 < 0) {
+                foreach (Projection.Viewpoint viewpoint in projection) {
+                    if (viewpoint.PointY < 0 || viewpoint.PointX < 0) {
                         invalidViewpointsCount++;
                     } else {
-                        workManager.AddWork(new SpatialUtils.ViewpointProps(viewpoint.Item2, viewpoint.Item1));
+                        workManager.AddWork(new SpatialUtils.ViewpointProps() {
+                            X = viewpoint.PointX,
+                            Y = viewpoint.PointY,
+                            ElevationOffset = SettingsManager.Instance.CurrentSettings.OffsetGlobal
+                                                ? SettingsManager.Instance.CurrentSettings.AltOffset
+                                                : viewpoint.ElevationOffset
+                        });
                     }
                 }
                 if (invalidViewpointsCount > 0) {
@@ -86,7 +97,7 @@ namespace VisualMagnitude {
                 workManager.StartWorking(ref elevationMap);
                 WorkManager.AutoEvent.WaitOne();
                 GeoMap result = workManager.GetResult();
-                System.Diagnostics.Debug.WriteLine("Computation finished\n------------ Time: {0} seconds\nViewpoints: {1}", watch.ElapsedMilliseconds / 1000, projection.GetViewpointsCount());
+                System.Diagnostics.Debug.WriteLine("Computation finished\n------------\nTime: {0} seconds\nViewpoints: {1}", watch.ElapsedMilliseconds / 1000, projection.GetViewpointsCount());
 
                 //save and display the result
                 WriteToRaster(raster, outputDataStore, result);

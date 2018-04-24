@@ -1,8 +1,5 @@
-﻿using ArcGIS.Desktop.Core;
-using ArcGIS.Desktop.Mapping;
+﻿using ArcGIS.Desktop.Mapping;
 using System;
-using System.IO;
-using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -46,6 +43,7 @@ namespace VisualMagnitude {
             try {
                 XDocument xmlDocument = XDocument.Load("VisualMagnitudeConfig.xml");
                 XElement xmlSettings = xmlDocument.Element("VisualMagnitude");
+                settings.OffsetGlobal = bool.Parse(xmlSettings.Element("OffsetGlobal").Value);
                 settings.AltOffset = Settings.StringToDouble(xmlSettings.Element("AltOffset").Value);
                 settings.LineInterval = Settings.StringToDouble(xmlSettings.Element("LineInterval").Value);
                 settings.OmittedRings = int.Parse(xmlSettings.Element("OmittedRings").Value);
@@ -67,6 +65,7 @@ namespace VisualMagnitude {
             using (XmlWriter writer = XmlWriter.Create("VisualMagnitudeConfig.xml")) {
                 writer.WriteStartDocument();
                 writer.WriteStartElement("VisualMagnitude");
+                writer.WriteElementString("OffsetGlobal", settings.OffsetGlobal.ToString());
                 writer.WriteElementString("AltOffset", settings.AltOffset.ToString());
                 writer.WriteElementString("LineInterval", settings.LineInterval.ToString());
                 writer.WriteElementString("OmittedRings", settings.OmittedRings.ToString());
@@ -97,6 +96,7 @@ namespace VisualMagnitude {
         /// </summary>
         public class Settings {
             public Settings() {
+                OffsetGlobal = true;
                 AltOffset = 0;
                 LineInterval = 10;
                 OmittedRings = 0;
@@ -105,6 +105,7 @@ namespace VisualMagnitude {
                 WindTurbines = false;
             }
 
+            public bool OffsetGlobal { get; set; }
             public double AltOffset { get; set; }
             public double LineInterval { get; set; }
             public int OmittedRings { get; set; }

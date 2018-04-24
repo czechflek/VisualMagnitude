@@ -40,34 +40,56 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            
+
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Label Grid.Row="0" Grid.Column="0" Content="VP altitude offset" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="2" ToolTip="Set the altitude of viewpoints above the surface."/>
-            <xctk:DoubleUpDown  Grid.Row="0" Grid.Column="1" Value="{Binding AltOffset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Increment="0.1" Watermark="VP altitude offset" Margin="2" ToolTip="Set the altitude of viewpoints above the surface."/>
+            <Label Grid.Row="0" Grid.Column="0" Content="Output file name:" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="2" ToolTip="Set the output file name. Only TIFF format is supported."/>
+            <TextBox Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" Text="{Binding OutputFilename, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="2" Padding="4" ToolTip="Set the output file name. Only TIFF format is supported."/>
 
-            <Label Grid.Row="1" Grid.Column="0" Content="Output file name" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="2" ToolTip="Set the output file name. Only TIFF format is supported."/>
-            <TextBox Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Text="{Binding OutputFilename, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="2" Padding="4" ToolTip="Set the output file name. Only TIFF format is supported."/>
+            <Label Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Omitted cells:" Margin="2" ToolTip="Set the ignored area around a viewpoint."/>
+            <xctk:IntegerUpDown Grid.Row="1" Grid.Column="1" Value="{Binding OmittedRings, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Watermark="Omitted cells" Margin="2" Minimum="0" ToolTip="Set the ignored area around a viewpoint."/>
 
-            <Label Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Omitted cells" Margin="2" ToolTip="Set the ignored area around a viewpoint."/>
-            <xctk:IntegerUpDown Grid.Row="2" Grid.Column="1" Value="{Binding OmittedRings, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Watermark="Omitted cells" Margin="2" Minimum="0" ToolTip="Set the ignored area around a viewpoint."/>
+            <Label Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Worker threads:" Margin="2" ToolTip="Set the number of worker threads. Recomended value is 2 times the number of CPU cores."/>
+            <xctk:IntegerUpDown Grid.Row="2" Grid.Column="1" Value="{Binding WorkerThreads, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Watermark="Worker threads" Margin="2" Minimum="1" ToolTip="Set the number of worker threads. Recomended value is 2 times the number of CPU cores."/>
 
-            <Label Grid.Row="3" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Content="VP line interval" Margin="2" ToolTip="Set the distance between viewpoints on polyline."/>
-            <xctk:DoubleUpDown Grid.Row="3" Grid.Column="1" Value="{Binding LineInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Increment="0.1" Watermark="VP interval" Margin="2" Minimum="0.1" ToolTip="Set the distance between viewpoints on polyline."/>
+            <Separator Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Top" />
 
-            <Label Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Worker threads" Margin="2" ToolTip="Set the number of worker threads. Recomended value is 2 times the number of CPU cores."/>
-            <xctk:IntegerUpDown Grid.Row="4" Grid.Column="1" Value="{Binding WorkerThreads, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Watermark="Worker threads" Margin="2" Minimum="1" ToolTip="Set the number of worker threads. Recomended value is 2 times the number of CPU cores."/>
+            <Label Grid.Row="5"  Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Elevation offset for viewpoints:" ToolTip="Select if the viewpoints are weighted. If not selected, all viewpoints will have the same weight." Margin="2"/>
+            <RadioButton Content="Per viewpoint" IsChecked="{Binding OffsetPerVP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" GroupName="Offset" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="6" Grid.Column="0" Margin="2"/>
+            <Grid Grid.Row="6" Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-            <Label Grid.Row="5" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Wind turbines?" ToolTip="Select if the viewpoints are wind turbines." Margin="2"/>
-            <CheckBox Content="" Grid.Row="5" Grid.Column="1" IsChecked="{Binding WindTurbines, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" ToolTip="Select if the viewpoints are wind turbines."/>
+                <RadioButton Name="GlobalOffsetRadio" IsChecked="{Binding OffsetGlobal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="" GroupName="Offset" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0" Margin="0"/>
+                <xctk:DoubleUpDown  Grid.Column="1" IsEnabled="{Binding ElementName=GlobalOffsetRadio, Path=IsChecked}" Value="{Binding AltOffset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Increment="0.1" Watermark="Global" Margin="2" ToolTip="The same offset for every viewpoint" />
 
-            <Button Content="Save" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="2" Padding="10,2,10,2" Command="{Binding SaveCommand}" ToolTip="Save the settings."/>
+            </Grid>
+
+            <Label Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Polyline density:" Margin="2" ToolTip="Set the distance between viewpoints on polyline."/>
+            <xctk:DoubleUpDown Grid.Row="4" Grid.Column="1" Value="{Binding LineInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Increment="0.1" Watermark="VP interval" Margin="2" Minimum="0.1" ToolTip="Set the distance between viewpoints on polyline."/>
+
+            <Label Grid.Row="7" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Wind turbines?" ToolTip="Select if the viewpoints are wind turbines." Margin="2"/>
+            <CheckBox Content="" Grid.Row="7" Grid.Column="1" IsChecked="{Binding WindTurbines, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" ToolTip="Select if the viewpoints are wind turbines."/>
+
+            <Label Grid.Row="8" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Weighted viewpoints?" ToolTip="Select if the viewpoints are weighted. If not selected, all viewpoints will have the same weight." Margin="2"/>
+            <CheckBox Content="" Grid.Row="8" Grid.Column="1" IsChecked="{Binding WeightedViewpoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" ToolTip="Select if the viewpoints are weighted. If not selected, all viewpoints will have the same weight."/>
+
+            
+
+            <Button Content="Save" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="2" Padding="10,2,10,2" Command="{Binding SaveCommand}" ToolTip="Save the settings."/>
+            
 
         </Grid>
         
+
     </Grid>
 </UserControl>

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using ArcGIS.Desktop.Core.Events;
 using ArcGIS.Desktop.Framework;
@@ -25,6 +24,8 @@ namespace VisualMagnitude {
         private string lineInterval;
         private string workerThreads;
         private bool windTurbines;
+        private bool offsetGlobal;
+        private bool offsetPerVP;
         private string heading = "Settings";
 
 
@@ -63,6 +64,11 @@ namespace VisualMagnitude {
             OutputFilename = settingsManager.CurrentSettings.OutputFilename;
             WorkerThreads = settingsManager.CurrentSettings.WorkerThreads.ToString();
             WindTurbines = settingsManager.CurrentSettings.WindTurbines;
+            OffsetGlobal = settingsManager.CurrentSettings.OffsetGlobal;
+            if (!OffsetGlobal) {
+                OffsetPerVP = true;
+            }
+
         }
 
         /// <summary>
@@ -75,7 +81,8 @@ namespace VisualMagnitude {
                 OmittedRings = int.Parse(OmittedRings),
                 OutputFilename = outputFilename,
                 WorkerThreads = int.Parse(WorkerThreads),
-                WindTurbines = WindTurbines
+                WindTurbines = WindTurbines,
+                OffsetGlobal = OffsetGlobal
             };
 
             SettingsManager.Instance.SaveSettings(settings);
@@ -140,6 +147,26 @@ namespace VisualMagnitude {
             set {
                 windTurbines = value;
                 OnPropertyChanged("WindTurbines");
+            }
+        }
+
+        public bool OffsetPerVP {
+            get {
+                return offsetPerVP;
+            }
+            set {
+                offsetPerVP = value;
+                OnPropertyChanged("OffsetPerVP");
+            }
+        }
+
+        public bool OffsetGlobal {
+            get {
+                return offsetGlobal;
+            }
+            set {
+                offsetGlobal = value;
+                OnPropertyChanged("OffsetGlobal");
             }
         }
 

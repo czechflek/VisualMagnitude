@@ -19,7 +19,7 @@ namespace VisualMagnitude {
         Raster inputRaster;
         String tempFolderPath;
         double stepLength = SettingsManager.Instance.CurrentSettings.LineInterval;
-        HashSet<Tuple<int, int>> viewpoints = new HashSet<Tuple<int, int>>();
+        HashSet<Viewpoint> viewpoints = new HashSet<Viewpoint>();
 
         private const string tempGdbName = "tempGDB";
         private const string tempFeatureDatasetName = "tempFeatureDataset";
@@ -43,7 +43,7 @@ namespace VisualMagnitude {
         /// <returns>True on success</returns>
         public async Task<bool> CalculateViewpoints(BasicFeatureLayer viewpointLayer) {
             //TODO: check for failures
-            if (viewpointLayer.ShapeType == ArcGIS.Core.CIM.esriGeometryType.esriGeometryPolyline 
+            if (viewpointLayer.ShapeType == ArcGIS.Core.CIM.esriGeometryType.esriGeometryPolyline
                 || viewpointLayer.ShapeType == ArcGIS.Core.CIM.esriGeometryType.esriGeometryLine) {
                 // Sequence of tools which converts vertices of polylines to points
                 var fileGDBResult = await Toolbox.CreateFileGDB(tempFolderPath, tempGdbName);
@@ -98,8 +98,8 @@ namespace VisualMagnitude {
         /// <param name="gdbPath">Path to GDB</param>
         /// <param name="featureClassName">Feature class</param>
         /// <returns>Viewpoints</returns>
-        private HashSet<Tuple<int, int>> GetLine(String gdbPath, String featureClassName) {
-            HashSet<Tuple<int, int>> result = new HashSet<Tuple<int, int>>(); //using hash set to prevent duplicates, possible speed up with array
+        private HashSet<Viewpoint> GetLine(String gdbPath, String featureClassName) {
+            HashSet<Viewpoint> result = new HashSet<Viewpoint>(); //using hash set to prevent duplicates, possible speed up with array
 
             using (Geodatabase geodatabase = new Geodatabase(new FileGeodatabaseConnectionPath(new Uri(gdbPath))))
             using (FeatureClass featureClass = geodatabase.OpenDataset<FeatureClass>(featureClassName)) {
@@ -127,11 +127,17 @@ namespace VisualMagnitude {
                                 double yStep = (pointY - previousY) / steps;
                                 for (int i = 0; i <= steps; i++) {
                                     Tuple<int, int> point = inputRaster.MapToPixel(previousX + xStep * i, previousY + yStep * i);
-                                    result.Add(point);
+                                    result.Add(new Viewpoint() {
+                                        PointX = point.Item1,
+                                        PointY = point.Item2
+                                    });
                                 }
                             } else if (previousFid != Int32.MinValue) { //endpoint
                                 Tuple<int, int> point = inputRaster.MapToPixel(previousX, previousY);
-                                result.Add(point);
+                                result.Add(new Viewpoint() {
+                                    PointX = point.Item1,
+                                    PointY = point.Item2
+                                });
                             }
 
                             previousX = pointX;
@@ -150,12 +156,14 @@ namespace VisualMagnitude {
         /// </summary>
         /// <param name="viewpointLayer">Layer which contains the viewpoints.</param>
         /// <returns></returns>
-        private HashSet<Tuple<int, int>> GetPoints(BasicFeatureLayer viewpointLayer) {
-            HashSet<Tuple<int, int>> result = new HashSet<Tuple<int, int>>(); //using hash set to prevent duplicates, possible speed up with array
+        private HashSet<Viewpoint> GetPoints(BasicFeatureLayer viewpointLayer) {
+            HashSet<Viewpoint> result = new HashSet<Viewpoint>(); //using hash set to prevent duplicates, possible speed up with array
             Table table = viewpointLayer.GetTable();
 
             QueryFilter queryFilter = new QueryFilter {
-                SubFields = "POINT_X, POINT_Y"
+                SubFields = SettingsManager.Instance.CurrentSettings.OffsetGlobal
+                                ? "POINT_X, POINT_Y"
+                                : "POINT_X, POINT_Y, OFFSET"
             };
 
             using (RowCursor rowCursor = table.Search(queryFilter, false)) {
@@ -164,12 +172,32 @@ namespace VisualMagnitude {
                         double pointX = Convert.ToDouble(row["POINT_X"]);
                         double pointY = Convert.ToDouble(row["POINT_Y"]);
                         Tuple<int, int> point = inputRaster.MapToPixel(pointX, pointY);
-                        result.Add(point);
+                        double altOffset = 0;
+                        if (!SettingsManager.Instance.CurrentSettings.OffsetGlobal) {
+                            var offset = row["OFFSET"];
+                            altOffset = Convert.ToDouble(row["OFFSET"]);
+                        }
+                        result.Add(new Viewpoint() {
+                            PointX = point.Item1,
+                            PointY = point.Item2,
+                            ElevationOffset = altOffset
+                        });
                     }
                 }
             }
 
             return result;
         }
+
+        public class Viewpoint {
+            public Viewpoint() {
+                ElevationOffset = 0;
+            }
+            public int PointX { get; set; }
+            public int PointY { get; set; }
+            public double ElevationOffset { get; set; }
+        }
     }
 }
+
+

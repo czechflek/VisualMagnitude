@@ -428,22 +428,12 @@ namespace VisualMagnitude {
             private int y;
             private int x;
             private double elevation;
-
-            public ViewpointProps(int y, int x, double elevation) {
-                this.Y = y;
-                this.X = x;
-                this.Elevation = elevation;
-            }
-
-            public ViewpointProps(int y, int x) {
-                this.Y = y;
-                this.X = x;
-                System.Diagnostics.Debug.WriteLine("Construct VP: [{0},{1}]", Y, X);
-            }
+            private double elevationOffset;
 
             public int Y { get => y; set => y = value; }
             public int X { get => x; set => x = value; }
             public double Elevation { get => elevation; set => elevation = value; }
+            public double ElevationOffset { get => elevationOffset; set => elevationOffset = value; }
 
         }
 
