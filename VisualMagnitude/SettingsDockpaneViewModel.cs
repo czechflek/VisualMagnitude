@@ -26,6 +26,7 @@ namespace VisualMagnitude {
         private bool windTurbines;
         private bool offsetGlobal;
         private bool offsetPerVP;
+        private bool weightedViewpoints;
         private string heading = "Settings";
 
 
@@ -65,6 +66,7 @@ namespace VisualMagnitude {
             WorkerThreads = settingsManager.CurrentSettings.WorkerThreads.ToString();
             WindTurbines = settingsManager.CurrentSettings.WindTurbines;
             OffsetGlobal = settingsManager.CurrentSettings.OffsetGlobal;
+            WeightedViewpoints = settingsManager.CurrentSettings.WeightedViewpoints;
             if (!OffsetGlobal) {
                 OffsetPerVP = true;
             }
@@ -82,7 +84,8 @@ namespace VisualMagnitude {
                 OutputFilename = outputFilename,
                 WorkerThreads = int.Parse(WorkerThreads),
                 WindTurbines = WindTurbines,
-                OffsetGlobal = OffsetGlobal
+                OffsetGlobal = OffsetGlobal,
+                WeightedViewpoints = WeightedViewpoints
             };
 
             SettingsManager.Instance.SaveSettings(settings);
@@ -167,6 +170,16 @@ namespace VisualMagnitude {
             set {
                 offsetGlobal = value;
                 OnPropertyChanged("OffsetGlobal");
+            }
+        }
+
+        public bool WeightedViewpoints {
+            get {
+                return weightedViewpoints;
+            }
+            set {
+                weightedViewpoints = value;
+                OnPropertyChanged("WeightedViewpoints");
             }
         }
 

@@ -425,15 +425,18 @@ namespace VisualMagnitude {
         /// Structure to store the viewpoint properties.
         /// </summary>
         public class ViewpointProps {
-            private int y;
-            private int x;
-            private double elevation;
-            private double elevationOffset;
-
-            public int Y { get => y; set => y = value; }
-            public int X { get => x; set => x = value; }
-            public double Elevation { get => elevation; set => elevation = value; }
-            public double ElevationOffset { get => elevationOffset; set => elevationOffset = value; }
+            public ViewpointProps() {
+                Y = -1;
+                X = -1;
+                Elevation = 0;
+                ElevationOffset = 0;
+                Weight = 1;
+            }
+            public int Y { get; set; }
+            public int X { get; set; }
+            public double Elevation { get; set; }
+            public double ElevationOffset { get; set; }
+            public double Weight { get; set; }
 
         }
 

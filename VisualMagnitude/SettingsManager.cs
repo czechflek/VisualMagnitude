@@ -50,6 +50,7 @@ namespace VisualMagnitude {
                 settings.OutputFilename = xmlSettings.Element("OutputFilename").Value;
                 settings.WorkerThreads = int.Parse(xmlSettings.Element("WorkerThreads").Value);
                 settings.WindTurbines = bool.Parse(xmlSettings.Element("WindTurbines").Value);
+                settings.WeightedViewpoints = bool.Parse(xmlSettings.Element("WeightedViewpoints").Value);
             } catch (Exception) {
                 CreateDefaultSettings();
             }
@@ -72,6 +73,7 @@ namespace VisualMagnitude {
                 writer.WriteElementString("OutputFilename", settings.OutputFilename);
                 writer.WriteElementString("WorkerThreads", settings.WorkerThreads.ToString());
                 writer.WriteElementString("WindTurbines", settings.WindTurbines.ToString());
+                writer.WriteElementString("WeightedViewpoints", settings.WeightedViewpoints.ToString());
                 writer.WriteEndElement();
                 writer.WriteEndDocument();
             }
@@ -103,6 +105,7 @@ namespace VisualMagnitude {
                 WorkerThreads = 4;
                 OutputFilename = "VisualMagnitude.tiff";
                 WindTurbines = false;
+                WeightedViewpoints = false;
             }
 
             public bool OffsetGlobal { get; set; }
@@ -112,6 +115,7 @@ namespace VisualMagnitude {
             public string OutputFilename { get; set; }
             public int WorkerThreads { get; set; }
             public bool WindTurbines { get; set; }
+            public bool WeightedViewpoints { get; set; }
 
             /// <summary>
             /// Convert string to double.

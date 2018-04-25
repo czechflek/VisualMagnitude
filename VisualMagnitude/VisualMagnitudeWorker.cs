@@ -64,7 +64,12 @@ namespace VisualMagnitude {
                     if (spatialUtils.IsCellVisible(losMap, item[0], item[1])) {
                         visualMagnitude = spatialUtils.GetVisualMagnitude(item[0], item[1]);
                         if (visualMagnitude > 0)
-                            sumator.AddResult(new Sumator.VisualMagnitudeResult(item[0], item[1], visualMagnitude));
+                            sumator.AddResult(new Sumator.VisualMagnitudeResult() {
+                                Y = item[0],
+                                X = item[1],
+                                VisualMagnitude = visualMagnitude,
+                                Weight = viewpoint.Weight
+                            });
                     }
 
                 }

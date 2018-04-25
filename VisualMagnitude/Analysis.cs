@@ -44,6 +44,11 @@ namespace VisualMagnitude {
                 }
             }
 
+            if (File.Exists(outputFolder + "/" + tmpRasterName)) {
+                    GarbageHelper.Instance.AddGarbage(outputFolder + "/" + tmpRasterName);
+                    GarbageHelper.Instance.CleanUp();
+            }
+
             ///most tasks have to run on MCT thread
             await QueuedTask.Run(async () => {
                 outputFolder = CreateOutputDirectory(outputFolderName);
@@ -58,10 +63,13 @@ namespace VisualMagnitude {
                         return;
                     }
                 } catch (Exception) {
-                    if (SettingsManager.Instance.CurrentSettings.OffsetGlobal) {
-                        MessageBox.Show("Invalid viewpoint data.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                    } else {
+                    if (!SettingsManager.Instance.CurrentSettings.OffsetGlobal) {
                         MessageBox.Show("Invalid viewpoint data. Do the viewpoints have OFFSET column specified?", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                       
+                    } else if (SettingsManager.Instance.CurrentSettings.WeightedViewpoints) {
+                        MessageBox.Show("Invalid viewpoint data. Do the viewpoints have WEIGHT column specified?", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    } else {
+                        MessageBox.Show("Invalid viewpoint data.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     }
                     return;
                 }
@@ -71,17 +79,14 @@ namespace VisualMagnitude {
                 //initialize work manager
                 WorkManager workManager = new WorkManager(SettingsManager.Instance.CurrentSettings.WorkerThreads);
                 int invalidViewpointsCount = 0;
-                foreach (Projection.Viewpoint viewpoint in projection) {
-                    if (viewpoint.PointY < 0 || viewpoint.PointX < 0) {
+                foreach (SpatialUtils.ViewpointProps viewpoint in projection) {
+                    if (viewpoint.Y < 0 || viewpoint.X < 0) {
                         invalidViewpointsCount++;
                     } else {
-                        workManager.AddWork(new SpatialUtils.ViewpointProps() {
-                            X = viewpoint.PointX,
-                            Y = viewpoint.PointY,
-                            ElevationOffset = SettingsManager.Instance.CurrentSettings.OffsetGlobal
-                                                ? SettingsManager.Instance.CurrentSettings.AltOffset
-                                                : viewpoint.ElevationOffset
-                        });
+                        if (SettingsManager.Instance.CurrentSettings.OffsetGlobal) {
+                            viewpoint.ElevationOffset = SettingsManager.Instance.CurrentSettings.AltOffset;
+                        }
+                        workManager.AddWork(viewpoint);
                     }
                 }
                 if (invalidViewpointsCount > 0) {
@@ -100,7 +105,12 @@ namespace VisualMagnitude {
                 System.Diagnostics.Debug.WriteLine("Computation finished\n------------\nTime: {0} seconds\nViewpoints: {1}", watch.ElapsedMilliseconds / 1000, projection.GetViewpointsCount());
 
                 //save and display the result
-                WriteToRaster(raster, outputDataStore, result);
+                try {
+                    WriteToRaster(raster, outputDataStore, result);
+                } catch (Exception) {
+                    MessageBox.Show("Cannot write data to raster.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+                
                 LayerFactory.Instance.CreateLayer(new Uri(Path.Combine(outputFolder, SettingsManager.Instance.CurrentSettings.OutputFilename)),
                                           MapView.Active.Map);
 

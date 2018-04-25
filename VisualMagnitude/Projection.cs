@@ -19,7 +19,7 @@ namespace VisualMagnitude {
         Raster inputRaster;
         String tempFolderPath;
         double stepLength = SettingsManager.Instance.CurrentSettings.LineInterval;
-        HashSet<Viewpoint> viewpoints = new HashSet<Viewpoint>();
+        HashSet<SpatialUtils.ViewpointProps> viewpoints = new HashSet<SpatialUtils.ViewpointProps>();
 
         private const string tempGdbName = "tempGDB";
         private const string tempFeatureDatasetName = "tempFeatureDataset";
@@ -98,8 +98,8 @@ namespace VisualMagnitude {
         /// <param name="gdbPath">Path to GDB</param>
         /// <param name="featureClassName">Feature class</param>
         /// <returns>Viewpoints</returns>
-        private HashSet<Viewpoint> GetLine(String gdbPath, String featureClassName) {
-            HashSet<Viewpoint> result = new HashSet<Viewpoint>(); //using hash set to prevent duplicates, possible speed up with array
+        private HashSet<SpatialUtils.ViewpointProps> GetLine(String gdbPath, String featureClassName) {
+            HashSet<SpatialUtils.ViewpointProps> result = new HashSet<SpatialUtils.ViewpointProps>(); //using hash set to prevent duplicates, possible speed up with array
 
             using (Geodatabase geodatabase = new Geodatabase(new FileGeodatabaseConnectionPath(new Uri(gdbPath))))
             using (FeatureClass featureClass = geodatabase.OpenDataset<FeatureClass>(featureClassName)) {
@@ -127,16 +127,16 @@ namespace VisualMagnitude {
                                 double yStep = (pointY - previousY) / steps;
                                 for (int i = 0; i <= steps; i++) {
                                     Tuple<int, int> point = inputRaster.MapToPixel(previousX + xStep * i, previousY + yStep * i);
-                                    result.Add(new Viewpoint() {
-                                        PointX = point.Item1,
-                                        PointY = point.Item2
+                                    result.Add(new SpatialUtils.ViewpointProps() {
+                                        X = point.Item1,
+                                        Y = point.Item2
                                     });
                                 }
                             } else if (previousFid != Int32.MinValue) { //endpoint
                                 Tuple<int, int> point = inputRaster.MapToPixel(previousX, previousY);
-                                result.Add(new Viewpoint() {
-                                    PointX = point.Item1,
-                                    PointY = point.Item2
+                                result.Add(new SpatialUtils.ViewpointProps() {
+                                    X = point.Item1,
+                                    Y = point.Item2
                                 });
                             }
 
@@ -156,14 +156,20 @@ namespace VisualMagnitude {
         /// </summary>
         /// <param name="viewpointLayer">Layer which contains the viewpoints.</param>
         /// <returns></returns>
-        private HashSet<Viewpoint> GetPoints(BasicFeatureLayer viewpointLayer) {
-            HashSet<Viewpoint> result = new HashSet<Viewpoint>(); //using hash set to prevent duplicates, possible speed up with array
+        private HashSet<SpatialUtils.ViewpointProps> GetPoints(BasicFeatureLayer viewpointLayer) {
+            HashSet<SpatialUtils.ViewpointProps> result = new HashSet<SpatialUtils.ViewpointProps>(); //using hash set to prevent duplicates, possible speed up with array
             Table table = viewpointLayer.GetTable();
 
+            string query = "POINT_X, POINT_Y";
+            if (!SettingsManager.Instance.CurrentSettings.OffsetGlobal) {
+                query += ", OFFSET";
+            }
+            if (SettingsManager.Instance.CurrentSettings.WeightedViewpoints) {
+                query += ", WEIGHT";
+            }
+
             QueryFilter queryFilter = new QueryFilter {
-                SubFields = SettingsManager.Instance.CurrentSettings.OffsetGlobal
-                                ? "POINT_X, POINT_Y"
-                                : "POINT_X, POINT_Y, OFFSET"
+                SubFields = query
             };
 
             using (RowCursor rowCursor = table.Search(queryFilter, false)) {
@@ -173,29 +179,25 @@ namespace VisualMagnitude {
                         double pointY = Convert.ToDouble(row["POINT_Y"]);
                         Tuple<int, int> point = inputRaster.MapToPixel(pointX, pointY);
                         double altOffset = 0;
+                        double weight = 0;
                         if (!SettingsManager.Instance.CurrentSettings.OffsetGlobal) {
-                            var offset = row["OFFSET"];
                             altOffset = Convert.ToDouble(row["OFFSET"]);
                         }
-                        result.Add(new Viewpoint() {
-                            PointX = point.Item1,
-                            PointY = point.Item2,
-                            ElevationOffset = altOffset
+
+                        if (SettingsManager.Instance.CurrentSettings.WeightedViewpoints) {
+                            weight = Convert.ToDouble(row["WEIGHT"]);
+                        }
+                        result.Add(new SpatialUtils.ViewpointProps() {
+                            X = point.Item1,
+                            Y = point.Item2,
+                            ElevationOffset = altOffset,
+                            Weight = weight
                         });
                     }
                 }
             }
 
             return result;
-        }
-
-        public class Viewpoint {
-            public Viewpoint() {
-                ElevationOffset = 0;
-            }
-            public int PointX { get; set; }
-            public int PointY { get; set; }
-            public double ElevationOffset { get; set; }
         }
     }
 }
