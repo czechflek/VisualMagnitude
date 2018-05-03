@@ -179,7 +179,7 @@ namespace VisualMagnitude {
                         double pointY = Convert.ToDouble(row["POINT_Y"]);
                         Tuple<int, int> point = inputRaster.MapToPixel(pointX, pointY);
                         double altOffset = 0;
-                        double weight = 0;
+                        double weight = 1;
                         if (!SettingsManager.Instance.CurrentSettings.OffsetGlobal) {
                             altOffset = Convert.ToDouble(row["OFFSET"]);
                         }
