@@ -56,6 +56,8 @@ Now, the Visual Magnitude Add-In is installed. To test this:
 ![alt text](http://share.kubacech.cz/ribbon.PNG "Visual Magnitude tab")
 
 ## Usage
+See a video tutorial on YouTube: [https://youtu.be/UA4JMfoY38I](https://youtu.be/UA4JMfoY38I)
+
 ### Basic Usage
 1. Import Digital Elevation Model (DEM) and viewpoints to a project.
 2. Go to _Visual Magnitude_ tab.
