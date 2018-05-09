@@ -1,5 +1,5 @@
 ﻿<ArcGIS defaultAssembly="VisualMagnitude.dll" defaultNamespace="VisualMagnitude" xmlns="http://schemas.esri.com/DADF/Registry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.esri.com/DADF/Registry file:///D:/Programs/ArcGis%20Pro/bin/ArcGIS.Desktop.Framework.xsd">
-  <AddInInfo id="{0708fa54-4e67-4460-b914-4172853b3130}" version="0.3" desktopVersion="2.1.10257">
+  <AddInInfo id="{0708fa54-4e67-4460-b914-4172853b3130}" version="1.0" desktopVersion="2.1.10257">
     <Name>Visual Magnitude</Name>
     <Description>Tool to calculate visual magnitude.</Description>
     <Image>Images\AddinDesktop32.png</Image>

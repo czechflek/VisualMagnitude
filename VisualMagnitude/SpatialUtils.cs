@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Numerics;
 
 namespace VisualMagnitude {
+    /// <summary>
+    /// Class which handles calculations needed to calculate the visual magnitude.
+    /// </summary>
     class SpatialUtils {
         private enum Orientation { N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW }
 
@@ -107,7 +110,7 @@ namespace VisualMagnitude {
 
                 return (Math.Pow(cellResolution, 2) / Math.Pow(distance, 2)) * Math.Abs(Math.Cos(vectorAngle));
             }
-           
+
         }
 
         /// <summary>
@@ -177,7 +180,7 @@ namespace VisualMagnitude {
         private double GetCellAspect(int cellY, int cellX) {
             GetCellSlopeComponents(cellY, cellX, out double westeast, out double northsouth);
 
-            return (Math.Atan2(westeast, -1*northsouth) + 2 * Math.PI) % (2 * Math.PI);
+            return (Math.Atan2(westeast, -1 * northsouth) + 2 * Math.PI) % (2 * Math.PI);
         }
 
         /// <summary>
@@ -270,11 +273,11 @@ namespace VisualMagnitude {
             }
 
             try {
-                northsouth = (cn* ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY - 1, cellX] + cn*ElevationMap[cellY - 1, cellX + 1]) / 4
-                           - (cn*ElevationMap[cellY + 1, cellX - 1] + ElevationMap[cellY + 1, cellX] + cn*ElevationMap[cellY + 1, cellX + 1]) / 4;
+                northsouth = (cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY - 1, cellX] + cn * ElevationMap[cellY - 1, cellX + 1]) / 4
+                           - (cn * ElevationMap[cellY + 1, cellX - 1] + ElevationMap[cellY + 1, cellX] + cn * ElevationMap[cellY + 1, cellX + 1]) / 4;
 
-                eastwest = (cn*ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY, cellX - 1] + cn*ElevationMap[cellY + 1, cellX - 1]) / 4
-                         - (cn*ElevationMap[cellY - 1, cellX + 1] + ElevationMap[cellY, cellX + 1] + cn*ElevationMap[cellY + 1, cellX + 1]) / 4;
+                eastwest = (cn * ElevationMap[cellY - 1, cellX - 1] + ElevationMap[cellY, cellX - 1] + cn * ElevationMap[cellY + 1, cellX - 1]) / 4
+                         - (cn * ElevationMap[cellY - 1, cellX + 1] + ElevationMap[cellY, cellX + 1] + cn * ElevationMap[cellY + 1, cellX + 1]) / 4;
             } catch (IndexOutOfRangeException) {
                 System.Diagnostics.Debug.WriteLine("{0}, {1}", cellX, cellY);
                 return 0;
