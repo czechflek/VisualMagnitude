@@ -83,6 +83,8 @@ See a video tutorial on YouTube: [https://youtu.be/UA4JMfoY38I](https://youtu.be
 5. Add the weight for each viewpoint in the table.
 6. Run the analysis.
 
+## Documentation
+Download the [Documentation.chm](Documentation.chm) which contains HTML documentation.
 
 ## Contributing
 
