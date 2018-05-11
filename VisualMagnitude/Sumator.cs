@@ -53,7 +53,7 @@ namespace VisualMagnitude {
             bool incomingResult;
             while((incomingResult = results.TryDequeue(out VisualMagnitudeResult result)) || alive) {
                 if(incomingResult)
-                    VisualMagnitudeMap[result.Y, result.X] += result.VisualMagnitude;
+                    VisualMagnitudeMap[result.Y, result.X] += result.VisualMagnitude * result.Weight;
             }
             System.Diagnostics.Debug.WriteLine("Sumator stopped");
             WorkManager.AutoEvent.Set();
@@ -66,25 +66,10 @@ namespace VisualMagnitude {
         /// Wraper for a single result.
         /// </summary>
         public struct VisualMagnitudeResult {
-            private int y;
-            private int x;
-            double visualMagnitude;
-
-            /// <summary>
-            /// Cpnstructor
-            /// </summary>
-            /// <param name="y">Y coordinate</param>
-            /// <param name="x">X coordinate</param>
-            /// <param name="visualMagnitude">Visual magnitude value</param>
-            public VisualMagnitudeResult(int y, int x, double visualMagnitude) : this() {
-                Y = y;
-                X = x;
-                VisualMagnitude = visualMagnitude;
-            }
-
-            public int Y { get => y; set => y = value; }
-            public int X { get => x; set => x = value; }
-            public double VisualMagnitude { get => visualMagnitude; set => visualMagnitude = value; }
+            public int Y { get; set; }
+            public int X { get; set; }
+            public double VisualMagnitude { get; set; }
+            public double Weight { get; set; }
         }
     }
 

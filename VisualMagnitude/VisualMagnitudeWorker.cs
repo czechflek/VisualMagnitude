@@ -9,7 +9,6 @@ namespace VisualMagnitude {
         private SpatialUtils spatialUtils;
         private int omittedRings = SettingsManager.Instance.CurrentSettings.OmittedRings;
         private GeoMap elevationMap;
-        private double elevationOffset = SettingsManager.Instance.CurrentSettings.AltOffset;
         private ConcurrentQueue<SpatialUtils.ViewpointProps> workQueue;
         private Sumator sumator;
         private WorkManager parent;
@@ -52,7 +51,7 @@ namespace VisualMagnitude {
             double visualMagnitude;
 
             spatialUtils.Viewpoint = viewpoint;
-            viewpoint.Elevation = elevationMap[viewpoint.Y, viewpoint.X] + elevationOffset;
+            viewpoint.Elevation = elevationMap[viewpoint.Y, viewpoint.X] + viewpoint.ElevationOffset;
 
             losMap[viewpoint.Y, viewpoint.X] = GeoMap.UndefinedValue; //initialize LOS of the viewpoint            
 
@@ -65,7 +64,12 @@ namespace VisualMagnitude {
                     if (spatialUtils.IsCellVisible(losMap, item[0], item[1])) {
                         visualMagnitude = spatialUtils.GetVisualMagnitude(item[0], item[1]);
                         if (visualMagnitude > 0)
-                            sumator.AddResult(new Sumator.VisualMagnitudeResult(item[0], item[1], visualMagnitude));
+                            sumator.AddResult(new Sumator.VisualMagnitudeResult() {
+                                Y = item[0],
+                                X = item[1],
+                                VisualMagnitude = visualMagnitude,
+                                Weight = viewpoint.Weight
+                            });
                     }
 
                 }
