@@ -102,7 +102,7 @@ namespace VisualMagnitude {
                 workManager.StartWorking(ref elevationMap);
                 WorkManager.AutoEvent.WaitOne();
                 GeoMap result = workManager.GetResult();
-                System.Diagnostics.Debug.WriteLine("Computation finished\n------------\nTime: {0} seconds\nViewpoints: {1}", watch.ElapsedMilliseconds / 1000, projection.GetViewpointsCount());
+                MessageBox.Show("Computation finished\n------------\nTime: " + watch.ElapsedMilliseconds / 1000 + " seconds\nViewpoints: " + projection.GetViewpointsCount(), "Finished", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
 
                 //save and display the result
                 try {
